@@ -77,3 +77,11 @@ export function parseRoute(hash, index) {
   const entry = index.get(section, id);
   return entry ? { view: "detail", section, id, entry } : { view: "notfound", section };
 }
+
+// R9: whether the narrow-screen menu is open after an action.
+// "toggle" flips it; following a link, Escape and a click on the scrim close it.
+export function nextMenuState(open, action) {
+  if (action === "toggle") return !open;
+  if (action === "navigate" || action === "escape" || action === "scrim") return false;
+  return open;
+}
