@@ -18,3 +18,13 @@ Star Wars fans who want to look up a fact, or follow a thread from one thing to 
 ### Out of scope
 
 Films and series the dataset does not cover, images and official artwork, accounts or saved progress, and any backend.
+
+## Round 2 requirements
+
+- R9: The section menu is a full-height vertical bar on the left side of the screen, replacing the row of buttons at the top. On narrow screens (such as a 375-pixel phone) the bar is hidden when a page loads and is opened with a menu button, so R8 still holds.
+- R10: Each item in the menu has a Star Wars-themed icon.
+- R11: Pages have blurred Star Wars landscape photos as their background, and all text on top of them stays easy to read. The photos are freely licensed pictures of real filming locations.
+- R12: Pages include images, so the site looks and feels like a fan page.
+- R13: The site has simple silhouette animations: an X-wing that flies across the screen and fires, and R2-D2 and C-3PO walking together.
+- R14: Black and white are the main colors of the site.
+- Changed: "images" is no longer out of scope (see R11 and R12). Images are bundled with the site, so R2 still holds. Official artwork and film stills stay out of scope.
