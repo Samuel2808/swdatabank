@@ -103,7 +103,7 @@ The page state lives in the URL hash, so links and the browser's back button wor
   | Vehicles  | Hardangerjøkulen glacier, Finse, Norway (Hoth) |
 
 - `js/photos.js` lists each photo: section, file, place, the planet it was filmed as, author and licence. It holds no URLs. `CREDITS.md` gives the full source page for each photo.
-- `scripts/fetch-photos.mjs` downloads the photos again from Wikimedia Commons, 1600 px wide. Only a developer runs it; the site never does (R2).
+- `scripts/fetch-photos.mjs` downloads the photos again from Wikimedia Commons as 1280 px wide JPEGs (900 px for the Matmata photo, whose original is only 1080 px wide). Only a developer runs it; the site never does (R2).
 - **Background (R11):** a fixed layer behind the page shows the current section's photo (a detail view uses its section's photo), blurred (`filter: blur(6px)`) and darkened. Text never sits directly on the photo: the content sits on panels of near-black (`rgba(0, 0, 0, 0.78)`), so white text keeps a contrast ratio of at least 7:1 whatever the photo shows.
 - **Banner (R12):** the top of every list and detail view shows the same photo unblurred, 160 px tall (120 px on narrow screens), cropped to fill, with a caption: "<place> · filmed as <planet>".
 - The footer lists the photo credits in one line ("Photos: … public domain / CC0, see CREDITS.md").
