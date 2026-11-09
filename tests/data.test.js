@@ -28,8 +28,8 @@ test("R6: every reference in the bundled data resolves to a real entry", () => {
   }
 });
 
-test("R2: the site's code and page contain no external URLs", async () => {
-  const files = ["index.html", ...(await readdir(new URL("js/", root))).map((n) => `js/${n}`)];
+test("R2: the site's code, page and styles contain no external URLs", async () => {
+  const files = ["index.html", "styles.css", ...(await readdir(new URL("js/", root))).map((n) => `js/${n}`)];
   for (const name of files) {
     const text = await readFile(new URL(name, root), "utf8");
     assert.doesNotMatch(text, /https?:\/\//, `${name} mentions an external URL`);
