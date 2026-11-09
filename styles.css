@@ -110,6 +110,58 @@ footer {
   padding: 16px 16px 96px; background: var(--panel); border-top: 1px solid var(--line);
 }
 
+/* R13: silhouettes. A fixed, clipped layer that never takes clicks or widens the page. */
+.sky { position: fixed; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; }
+.sky svg { fill: var(--text); }
+.sky .detail { fill: var(--bg); }
+#xwing {
+  position: absolute; top: 16vh; left: 0; width: 150px; opacity: 0.9;
+  transform: translateX(-180px);
+  animation: fly 14s linear 1s infinite;
+}
+.laser { fill: var(--red); opacity: 0; animation: fire 14s linear 1s infinite; }
+.droids {
+  position: absolute; bottom: 6px; left: 0; display: flex; align-items: flex-end; gap: 10px;
+  opacity: 0.9; transform: translateX(100vw);
+  animation: walk 30s linear infinite;
+}
+#r2d2 { width: 34px; transform-origin: 50% 100%; animation: rock 0.5s ease-in-out infinite alternate; }
+#c3po { width: 24px; }
+.leg { transform-box: fill-box; transform-origin: 50% 0; animation: step 0.5s ease-in-out infinite alternate; }
+.leg-right { animation-direction: alternate-reverse; }
+
+@keyframes fly {
+  0% { transform: translateX(-180px); }
+  30%, 100% { transform: translateX(calc(100vw + 40px)); }
+}
+@keyframes fire {
+  0%, 8% { opacity: 0; transform: translateX(0); }
+  8.1% { opacity: 1; transform: translateX(0); }
+  12% { opacity: 1; transform: translateX(90px); }
+  12.1%, 17% { opacity: 0; transform: translateX(0); }
+  17.1% { opacity: 1; transform: translateX(0); }
+  21% { opacity: 1; transform: translateX(90px); }
+  21.1%, 100% { opacity: 0; transform: translateX(0); }
+}
+@keyframes walk {
+  from { transform: translateX(100vw); }
+  to { transform: translateX(-120px); }
+}
+@keyframes rock {
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(4deg); }
+}
+@keyframes step {
+  from { transform: rotate(-14deg); }
+  to { transform: rotate(14deg); }
+}
+
+/* R13: no motion for visitors who ask for less. */
+@media (prefers-reduced-motion: reduce) {
+  .sky { display: none; }
+  #sidebar { transition: none; }
+}
+
 /* R9 + R8: on narrow screens the bar is hidden until the menu button opens it. */
 @media (max-width: 767px) {
   .topbar {
