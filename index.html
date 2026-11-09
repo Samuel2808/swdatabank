@@ -8,14 +8,28 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <header class="top">
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <button id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <a class="brand" href="#/films">Databank</a>
-    <nav id="tabs" aria-label="Sections"></nav>
   </header>
-  <main id="main"><p class="status">Loading…</p></main>
-  <footer>
-    Unofficial fan project, not affiliated with Lucasfilm or Disney.
-    Data from SWAPI, the Star Wars API, bundled with this site.
-  </footer>
+
+  <nav id="sidebar" aria-label="Sections">
+    <a class="brand" href="#/films">Databank</a>
+    <ul id="menu"></ul>
+  </nav>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="page">
+    <main id="main"><p class="status">Loading…</p></main>
+    <footer>
+      Unofficial fan project, not affiliated with Lucasfilm or Disney.
+      Data from SWAPI, the Star Wars API, bundled with this site.
+      Photos of real filming locations are public domain or CC0; see CREDITS.md.
+    </footer>
+  </div>
 </body>
 </html>
