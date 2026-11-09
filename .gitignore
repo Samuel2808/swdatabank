@@ -1,0 +1,4 @@
+node_modules/
+.venv/
+*.jsonl
+.DS_Store

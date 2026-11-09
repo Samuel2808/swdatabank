@@ -1,0 +1,10 @@
+{
+  "name": "swdatabank",
+  "private": true,
+  "type": "module",
+  "description": "A browsable Star Wars encyclopedia that runs in the browser",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test"
+  }
+}
