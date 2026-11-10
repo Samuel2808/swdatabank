@@ -109,10 +109,25 @@ export function parseRoute(hash, index) {
   return entry ? { view: "detail", section, id, entry } : { view: "notfound", section };
 }
 
-// R9: whether the narrow-screen menu is open after an action.
-// "toggle" flips it; following a link, Escape and a click on the scrim close it.
-export function nextMenuState(open, action) {
+// R9 (changed in round 3): whether the sidebar is open after an action.
+// "toggle" (the menu button) flips it on any screen. On narrow screens following
+// a link, Escape and a click on the scrim close it; on wide screens they leave it
+// alone. `wide` missing means narrow, as in round 2.
+export function nextMenuState(open, action, wide = false) {
   if (action === "toggle") return !open;
-  if (action === "navigate" || action === "escape" || action === "scrim") return false;
+  if (action === "navigate" || action === "escape" || action === "scrim") return wide ? open : false;
   return open;
+}
+
+// R9: open on wide screens (768 px and more), closed on narrow ones.
+export function menuStartsOpen(wide) {
+  return Boolean(wide);
+}
+
+// U1: the index Tab (or Shift+Tab when `back`) moves to inside a menu of `count`
+// links, wrapping at both ends; -1 means focus is outside the menu.
+export function nextFocusIndex(current, count, back) {
+  if (count <= 0) return -1;
+  if (current < 0 || current >= count) return back ? count - 1 : 0;
+  return (current + (back ? count - 1 : 1)) % count;
 }
