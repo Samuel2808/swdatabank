@@ -28,3 +28,19 @@ Films and series the dataset does not cover, images and official artwork, accoun
 - R13: The site has simple silhouette animations: an X-wing that flies across the screen and fires, and R2-D2 and C-3PO walking together.
 - R14: Black and white are the main colors of the site.
 - Changed: "images" is no longer out of scope (see R11 and R12). Images are bundled with the site, so R2 still holds. Official artwork and film stills stay out of scope.
+
+## Round 3 requirements
+
+- R15: Every time the site is loaded, a full-screen intro plays before the main page:
+  1. A black background with a field of stars in the style of the space backgrounds of the Star Wars films. The stars are drawn for this project (no images from the films).
+  2. The title "Welcome to the Wiki of Star Wars" appears with a motion animation: it starts large and shrinks back into the stars.
+  3. Then a short opening text scrolls up and away in perspective, in yellow, in the style of the opening of a Star Wars film. The text is original wording written for this site and introduces the wiki.
+  4. A visible "Skip" button (and the Escape or Enter key) ends the intro at any time, and the intro ends by itself after the text, showing the main page.
+  5. When the visitor's system asks for reduced motion, the title and text are shown without movement.
+- R16: A search bar is always visible at the top of the page. Typing a word searches every section (films, characters, planets, species, starships, vehicles) by name or title, ignoring upper/lower case and accents, and shows the results grouped by section, each linking to its detail page. If nothing matches, it says so clearly. The matching rules are a pure function with their own tests.
+- R9 (changed in round 3): The section menu is a full-height vertical bar on the left side of the screen. On every screen size the bar can be hidden and shown again with a clearly visible button, and when it is hidden the content uses the freed width. On wide screens the bar starts open; on narrow screens (below 768 pixels, such as a 375-pixel phone) it starts closed, so R8 still holds.
+  - Before (round 2): "The section menu is a full-height vertical bar on the left side of the screen, replacing the row of buttons at the top. On narrow screens (such as a 375-pixel phone) the bar is hidden when a page loads and is opened with a menu button, so R8 still holds." On wide screens the bar was always visible and could not be hidden.
+  - Why it changed: on wide screens the bar took 220 pixels that could not be given back to the content, and the menu worked differently on phones and computers. The owner asked for one button that hides and shows the bar on every screen. See decision 0004.
+- R4 (changed in round 3): The section search box also ignores accents and punctuation, using the same matching rules as R16, so "padme" finds "Padmé Amidala" in both places.
+  - Before (round 1): "Typing in the search box filters the current section's cards by name, ignoring case."
+  - Why it changed: two search boxes with different rules would be confusing; the owner agreed to one set of rules.
