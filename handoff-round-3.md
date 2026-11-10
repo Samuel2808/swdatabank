@@ -5,7 +5,7 @@ Read this with `problem.md`, `spec.md`, `CLAUDE.md` and `docs/decisions/` before
 ## State
 
 - Round 3 is on branch `round-3-intro-search`, opened as a pull request against `main` and **not merged**: the owner reviews it first.
-- `npm test`: 93 tests, all passing. Each test name starts with the requirement ID it checks. The test-first commits (`02328b9`, `2b94e25`, `79b5591`, `dd45acb`) fail on purpose at those commits.
+- `npm test`: 99 tests, all passing. Each test name starts with the requirement ID it checks. The test-first commits (`02328b9`, `2b94e25`, `79b5591`, `dd45acb`, `decb120`, `1f51a2d`) fail on purpose at those commits.
 - Run: `python3 -m http.server 8000`, then open http://localhost:8000.
 
 ## What round 3 delivered
@@ -28,7 +28,11 @@ Read this with `problem.md`, `spec.md`, `CLAUDE.md` and `docs/decisions/` before
 - U7: the section box is worded as a filter.
 - U8: the footer links `CREDITS.md`.
 - U9: the menu button has a visible text label.
-- Also: the intro text is left-aligned and smaller on phones.
+- U10: long facts (a film's opening crawl) are joined into full-width paragraphs (`paragraphsOf`).
+- U11: text grows with the screen, 16 px on phones to 20 px on large screens (all sizes in rem).
+- U12: facts are a grid of label/value boxes that fills the panel.
+- Also: the intro text is left-aligned and smaller on phones, and on large screens its column and font grow with the screen.
+- U10–U12 and the larger intro came from the owner's review in the same session ("the texts look very cramped, too much space, badly arranged").
 
 ## Answers the owner gave at the start of round 3
 
