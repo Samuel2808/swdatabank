@@ -4,6 +4,7 @@ import {
   buildIndex, searchEntries, searchAll, normalizeText, factsOf, relatedOf, parseRoute,
   nextMenuState, menuStartsOpen, nextFocusIndex,
   starField, introStartState, nextIntroState, introKeyEnds,
+  titleFor, countText,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { ICONS } from "./icons.js";
@@ -231,18 +232,11 @@ function render() {
   setBackdrop(route.view === "search" ? "films" : route.section);
   if (route.view !== "search") globalSearch.value = "";
   else if (globalSearch.value !== route.query) globalSearch.value = route.query;
-  if (route.view === "search") {
-    renderSearch(route.query);
-    document.title = "Search · Star Wars Databank";
-  } else if (route.view === "detail") {
-    renderDetail(route.entry);
-    document.title = `${route.entry.name} · Star Wars Databank`;
-  } else if (route.view === "notfound") {
-    renderNotFound(route.section);
-  } else {
-    renderList(route.section);
-    document.title = `${labelOf(route.section)} · Star Wars Databank`;
-  }
+  if (route.view === "search") renderSearch(route.query);
+  else if (route.view === "detail") renderDetail(route.entry);
+  else if (route.view === "notfound") renderNotFound(route.section);
+  else renderList(route.section);
+  document.title = titleFor(route);
   window.scrollTo(0, 0);
 }
 

@@ -167,3 +167,22 @@ export function nextIntroState(state, event) {
 export function introKeyEnds(key) {
   return key === "Enter" || key === "Escape";
 }
+
+const SITE = "Star Wars Databank";
+
+// U5: the browser tab title for a route from parseRoute.
+export function titleFor(route) {
+  if (route.view === "detail") return `${route.entry.name} · ${SITE}`;
+  if (route.view === "notfound") return `Not found · ${SITE}`;
+  if (route.view === "search") return `Search · ${SITE}`;
+  const section = SECTIONS.find((s) => s.id === route.section);
+  return `${section ? section.label : "Films"} · ${SITE}`;
+}
+
+// U6: the line under the section filter, e.g. "Showing 3 of 82 characters".
+export function countText(shown, total, label, query) {
+  const noun = label.toLowerCase();
+  if (shown === 0) return `No ${noun} match “${String(query ?? "").trim()}”.`;
+  if (shown === total) return `Showing all ${total} ${noun}`;
+  return `Showing ${shown} of ${total} ${noun}`;
+}
