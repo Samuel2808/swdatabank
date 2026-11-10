@@ -149,7 +149,7 @@ The page state lives in the URL hash, so links and the browser's back button wor
 - The state is a pure function `nextIntroState(state, event)` in `js/logic.js`. States: `playing`, `still` (reduced motion) and `done`. Events: `skip` (button, Enter, Escape) ends both `playing` and `still`; `end` (the crawl finished) ends `playing` only. `introKeyEnds(key)` says whether a key ends the intro (Enter and Escape). `app.js` only applies the result.
 - **Reduced motion (R15.5):** with `prefers-reduced-motion: reduce` there is no movement: no twinkling, the title sits still above the text, and the text is shown flat (no perspective), on screen, scrollable if the screen is short. Because nothing moves, the intro does not end by itself (state `still`): the visitor reads it and presses Skip, Enter or Escape.
 - The intro plays on every page load, including a reload and a direct link such as `#/people/1`; when it ends, the page the link names is showing. It is not remembered between visits. It plays no sound.
-- It works the same at 375 px: the title and text use sizes in `vw` with limits (`clamp`) so they never overflow (R8).
+- It works the same at 375 px: the title and text use sizes in `vw` with limits (`clamp`) so they never overflow (R8). Below 481 px the text is left-aligned at 18 px (justified text left wide gaps on a phone) and the "Enter / Esc" hint is hidden.
 
 ### Site-wide search (R16)
 
