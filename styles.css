@@ -131,7 +131,7 @@ h2 { font-size: 0.875rem; color: var(--muted); text-transform: uppercase; letter
 /* U12: facts are boxes of label and value that wrap to fill the panel. */
 .facts {
   display: grid; gap: 10px; margin: 0;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
 }
 .fact { padding: 10px 14px; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; }
 .facts dt { color: var(--muted); font-size: 0.8125rem; }
