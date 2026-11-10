@@ -31,11 +31,34 @@ export function buildIndex(raw) {
   return { sections, get: (section, id) => byKey.get(`${section}/${id}`) };
 }
 
-// R4: case-insensitive substring match on the name; blank text matches everything.
+// R16: "Padmé A-1" -> "padmea1": lower case, no accents, letters and digits only.
+export function normalizeText(text) {
+  return String(text ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+// R16: every word of the query (normalised) occurs somewhere in the normalised name.
+// A query with no words left matches everything.
+export function matchesQuery(name, query) {
+  const words = String(query ?? "").split(/\s+/).map(normalizeText).filter(Boolean);
+  const target = normalizeText(name);
+  return words.every((w) => target.includes(w));
+}
+
+// R4 (changed in round 3): the section filter uses the R16 matching rules.
 export function searchEntries(entries, query) {
-  const q = String(query ?? "").trim().toLowerCase();
-  if (!q) return entries;
-  return entries.filter((e) => e.name.toLowerCase().includes(q));
+  return entries.filter((e) => matchesQuery(e.name, query));
+}
+
+// R16: matches in every section, grouped in menu order; blank text gives no groups.
+export function searchAll(index, query) {
+  if (!normalizeText(query)) return [];
+  return SECTIONS
+    .map((s) => ({ section: s.id, label: s.label, entries: searchEntries(index.sections[s.id] || [], query) }))
+    .filter((g) => g.entries.length > 0);
 }
 
 // "birth_year" -> "Birth year"; all-caps names such as "MGLT" are kept as they are.
@@ -69,9 +92,17 @@ export function relatedOf(entry, index) {
   return groups;
 }
 
+function decodeSafely(text) {
+  try { return decodeURIComponent(text); } catch { return text; }
+}
+
 // "#/people/1" -> detail; "#/people" -> list; anything unknown -> the films list.
 export function parseRoute(hash, index) {
-  const [section, id] = String(hash ?? "").replace(/^#\/?/, "").split("/");
+  const path = String(hash ?? "").replace(/^#\/?/, "");
+  // R16: "#/search/<text>" -> the search view; the text may itself contain "/".
+  const search = path.match(/^search(?:\/(.*))?$/);
+  if (search) return { view: "search", query: decodeSafely(search[1] ?? "") };
+  const [section, id] = path.split("/");
   if (!SECTION_IDS.includes(section)) return { view: "list", section: "films" };
   if (!id) return { view: "list", section };
   const entry = index.get(section, id);
