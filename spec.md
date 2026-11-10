@@ -189,7 +189,7 @@ Each fix is listed separately so it can be reviewed on its own. Where a fix has 
 - **U3 — Skip link.** A "Skip to content" link is the first thing Tab reaches on the page (after the intro); it is hidden until focused.
 - **U4 — Focus follows navigation.** After a route change, focus moves to the new view's main heading (`tabindex="-1"`), so keyboard and screen-reader users start at the top of the new view instead of on a link that has just disappeared. Typing in the search bar keeps focus in the bar.
 - **U5 — Page title on "not found".** The not-found view now sets the browser tab title ("Not found · Star Wars Databank"); before, it kept the previous page's title. The search view sets "Search · Star Wars Databank".
-- **U6 — Clearer count.** The section count reads "Showing 12 of 82 characters" instead of "12 of 82", and "No characters match “text”." instead of "No matches".
+- **U6 — Clearer count.** The section count reads "Showing 12 of 82 characters" instead of "12 of 82" ("Showing all 82 characters" when nothing is filtered out), and "No characters match “text”." instead of "No matches". The wording is the pure function `countText(shown, total, label, query)`.
 - **U7 — Section filter wording.** See R4 above: the box says "Filter … by name" and is labelled for screen readers by section.
 - **U8 — Credits link.** "see CREDITS.md" in the footer is now a link to the bundled `CREDITS.md`.
 - **U9 — Menu button label.** The button has a visible text label (see R9) instead of an icon alone.

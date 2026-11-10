@@ -151,7 +151,7 @@ function renderList(section) {
 
   function update() {
     const found = searchEntries(all, input.value);
-    count.textContent = found.length ? `${found.length} of ${all.length}` : "No matches";
+    count.textContent = countText(found.length, all.length, labelOf(section), input.value);
     list.replaceChildren(...cards(found).children);
   }
   input.addEventListener("input", update);
