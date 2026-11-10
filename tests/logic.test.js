@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  parseRef, buildIndex, searchEntries, factsOf, relatedOf, labelFor, parseRoute, hrefFor,
+  parseRef, buildIndex, searchEntries, factsOf, relatedOf, labelFor, parseRoute, hrefFor, nextMenuState,
 } from "../js/logic.js";
 
 // A tiny fixture shaped like SWAPI records.
@@ -130,4 +130,21 @@ test("R5: an unknown entry id routes to not found", () => {
 
 test("R6: hrefFor builds the hash for an entry", () => {
   assert.equal(hrefFor("starships", "12"), "#/starships/12");
+});
+
+test("R9: the menu button opens a closed menu and closes an open one", () => {
+  assert.equal(nextMenuState(false, "toggle"), true);
+  assert.equal(nextMenuState(true, "toggle"), false);
+});
+
+test("R9: following a section link, pressing Escape or clicking the scrim closes the menu", () => {
+  for (const action of ["navigate", "escape", "scrim"]) {
+    assert.equal(nextMenuState(true, action), false, action);
+    assert.equal(nextMenuState(false, action), false, action);
+  }
+});
+
+test("R9: an unknown action leaves the menu as it was", () => {
+  assert.equal(nextMenuState(true, "resize"), true);
+  assert.equal(nextMenuState(false, undefined), false);
 });

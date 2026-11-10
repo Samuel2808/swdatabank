@@ -8,14 +8,64 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <header class="top">
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <button id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <a class="brand" href="#/films">Databank</a>
-    <nav id="tabs" aria-label="Sections"></nav>
   </header>
-  <main id="main"><p class="status">Loading…</p></main>
-  <footer>
-    Unofficial fan project, not affiliated with Lucasfilm or Disney.
-    Data from SWAPI, the Star Wars API, bundled with this site.
-  </footer>
+
+  <nav id="sidebar" aria-label="Sections">
+    <a class="brand" href="#/films">Databank</a>
+    <ul id="menu"></ul>
+  </nav>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="page">
+    <main id="main"><p class="status">Loading…</p></main>
+    <footer>
+      Unofficial fan project, not affiliated with Lucasfilm or Disney.
+      Data from SWAPI, the Star Wars API, bundled with this site.
+      Photos of real filming locations are public domain or CC0; see CREDITS.md.
+    </footer>
+  </div>
+
+  <!-- R13: decorative silhouettes drawn for this project, animated in styles.css. -->
+  <div class="sky" aria-hidden="true">
+    <svg id="xwing" viewBox="0 0 140 40" aria-hidden="true">
+      <rect class="laser" x="96" y="2.6" width="16" height="1.8" rx="0.9"/>
+      <rect class="laser" x="96" y="35.6" width="16" height="1.8" rx="0.9"/>
+      <path d="M20 4h68v2H20zM20 34h68v2H20z"/>
+      <path d="M14 17 22 4h12l8 13zM14 23l8 13h12l8-13z"/>
+      <path d="M6 9h26v6H6zM6 25h26v6H6z"/>
+      <path d="M8 17h66l46 2.2v1.6L74 23H8z"/>
+      <path d="M54 17c4-5 14-6 20 0z"/>
+    </svg>
+    <div class="droids">
+      <svg id="r2d2" viewBox="0 0 40 52" aria-hidden="true">
+        <path d="M8 17a12 12 0 0 1 24 0z"/>
+        <rect x="8" y="18" width="24" height="22" rx="1"/>
+        <rect x="2" y="16" width="6" height="30" rx="2"/>
+        <rect x="32" y="16" width="6" height="30" rx="2"/>
+        <path d="M0 52l2-6h6l2 6zM30 52l2-6h6l2 6zM16 52l1.5-12h5L24 52z"/>
+        <circle class="detail" cx="20" cy="10" r="2.6"/>
+        <rect class="detail" x="12" y="22" width="16" height="3" rx="1"/>
+        <rect class="detail" x="12" y="28" width="5" height="8" rx="1"/>
+      </svg>
+      <svg id="c3po" viewBox="0 0 30 72" aria-hidden="true">
+        <ellipse cx="15" cy="8" rx="5.5" ry="6.5"/>
+        <rect x="13" y="14" width="4" height="4"/>
+        <path d="M7 18h16l1 18H6z"/>
+        <rect x="9" y="36" width="12" height="4" rx="1"/>
+        <path d="M6 19 2 36l1.5 1L8 22zM24 19l4 17-1.5 1L22 22z"/>
+        <g class="leg leg-left"><rect x="9.5" y="39" width="5" height="30" rx="2"/><path d="M8 69h7v3H7z"/></g>
+        <g class="leg leg-right"><rect x="15.5" y="39" width="5" height="30" rx="2"/><path d="M15 69h7l1 3h-8z"/></g>
+        <circle class="detail" cx="13" cy="7.5" r="1.1"/>
+        <circle class="detail" cx="17" cy="7.5" r="1.1"/>
+      </svg>
+    </div>
+  </div>
 </body>
 </html>

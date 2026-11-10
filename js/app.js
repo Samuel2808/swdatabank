@@ -1,11 +1,17 @@
 // Rendering and routing only. All logic lives in logic.js and loader.js.
 import { SECTIONS } from "./sections.js";
-import { buildIndex, searchEntries, factsOf, relatedOf, parseRoute } from "./logic.js";
+import { buildIndex, searchEntries, factsOf, relatedOf, parseRoute, nextMenuState } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
+import { ICONS } from "./icons.js";
+import { PHOTOS } from "./photos.js";
 
 const main = document.getElementById("main");
-const tabs = document.getElementById("tabs");
+const menu = document.getElementById("menu");
+const menuButton = document.getElementById("menu-button");
+const scrim = document.getElementById("scrim");
+const backdrop = document.getElementById("backdrop");
 let index = null;
+let menuOpen = false;
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -19,12 +25,35 @@ function el(tag, attrs = {}, ...children) {
 
 const labelOf = (id) => SECTIONS.find((s) => s.id === id).label;
 
-function renderTabs(current) {
-  tabs.replaceChildren(...SECTIONS.map((s) => {
-    const a = el("a", { href: `#/${s.id}`, text: s.label });
+// R9, R10: the sidebar menu, one link with an icon per section.
+function renderMenu(current) {
+  menu.replaceChildren(...SECTIONS.map((s) => {
+    const icon = el("span", { class: "icon" });
+    icon.innerHTML = ICONS[s.id]; // static markup from icons.js, never user input
+    const a = el("a", { href: `#/${s.id}` }, icon, s.label);
     if (s.id === current) a.setAttribute("aria-current", "page");
-    return a;
+    return el("li", {}, a);
   }));
+}
+
+// R9: apply the open/closed state decided by nextMenuState.
+function menuAction(action) {
+  menuOpen = nextMenuState(menuOpen, action);
+  document.body.classList.toggle("menu-open", menuOpen);
+  menuButton.setAttribute("aria-expanded", String(menuOpen));
+  scrim.hidden = !menuOpen;
+}
+
+// R11: the section's photo behind the page; R12: the same photo as a banner.
+function setBackdrop(section) {
+  backdrop.style.backgroundImage = `url("${PHOTOS[section].file}")`;
+}
+
+function banner(section) {
+  const p = PHOTOS[section];
+  return el("figure", { class: "banner" },
+    el("img", { src: p.file, alt: p.alt }),
+    el("figcaption", { text: `${p.place} · filmed as ${p.filmedAs} · Photo: ${p.author} (${p.license})` }));
 }
 
 function subtitle(entry) {
@@ -47,7 +76,7 @@ function renderList(section) {
   }
   input.addEventListener("input", update);
   update();
-  main.replaceChildren(el("h1", { text: labelOf(section) }), input, count, list);
+  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, count, list);
 }
 
 function renderDetail(entry) {
@@ -61,6 +90,7 @@ function renderDetail(entry) {
   ]);
 
   main.replaceChildren(
+    banner(entry.section),
     el("a", { class: "back", href: `#/${entry.section}`, text: `← ${labelOf(entry.section)}` }),
     el("h1", { text: entry.name }),
     el("h2", { text: "Facts" }), facts,
@@ -70,6 +100,7 @@ function renderDetail(entry) {
 
 function renderNotFound(section) {
   main.replaceChildren(
+    banner(section),
     el("h1", { text: "Not found" }),
     el("p", {}, "There is no such entry. ", el("a", { href: `#/${section}`, text: `Back to ${labelOf(section)}` })),
   );
@@ -77,7 +108,8 @@ function renderNotFound(section) {
 
 function render() {
   const route = parseRoute(location.hash, index);
-  renderTabs(route.section);
+  renderMenu(route.section);
+  setBackdrop(route.section);
   if (route.view === "detail") {
     renderDetail(route.entry);
     document.title = `${route.entry.name} · Star Wars Databank`;
@@ -91,6 +123,11 @@ function render() {
 }
 
 async function start() {
+  setBackdrop("films");
+  menuButton.addEventListener("click", () => menuAction("toggle"));
+  scrim.addEventListener("click", () => menuAction("scrim"));
+  menu.addEventListener("click", (e) => { if (e.target.closest("a")) menuAction("navigate"); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menuAction("escape"); });
   try {
     index = buildIndex(await loadAll((url) => fetch(url)));
   } catch (err) {
