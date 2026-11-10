@@ -11,14 +11,14 @@
   <div class="backdrop" id="backdrop" aria-hidden="true"></div>
 
   <header class="topbar">
-    <button id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Menu">
-      <span></span><span></span><span></span>
+    <button id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false">
+      <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span id="menu-label">Menu</span>
     </button>
     <a class="brand" href="#/films">Databank</a>
   </header>
 
   <nav id="sidebar" aria-label="Sections">
-    <a class="brand" href="#/films">Databank</a>
     <ul id="menu"></ul>
   </nav>
   <div class="scrim" id="scrim" hidden></div>

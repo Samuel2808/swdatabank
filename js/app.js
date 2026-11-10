@@ -1,6 +1,9 @@
 // Rendering and routing only. All logic lives in logic.js and loader.js.
 import { SECTIONS } from "./sections.js";
-import { buildIndex, searchEntries, factsOf, relatedOf, parseRoute, nextMenuState } from "./logic.js";
+import {
+  buildIndex, searchEntries, factsOf, relatedOf, parseRoute,
+  nextMenuState, menuStartsOpen, nextFocusIndex,
+} from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { ICONS } from "./icons.js";
 import { PHOTOS } from "./photos.js";
@@ -8,10 +11,13 @@ import { PHOTOS } from "./photos.js";
 const main = document.getElementById("main");
 const menu = document.getElementById("menu");
 const menuButton = document.getElementById("menu-button");
+const menuLabel = document.getElementById("menu-label");
 const scrim = document.getElementById("scrim");
 const backdrop = document.getElementById("backdrop");
+// R9: 768 px and wider counts as a wide screen.
+const wideScreen = window.matchMedia("(min-width: 768px)");
 let index = null;
-let menuOpen = false;
+let menuOpen = menuStartsOpen(wideScreen.matches);
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -36,12 +42,34 @@ function renderMenu(current) {
   }));
 }
 
-// R9: apply the open/closed state decided by nextMenuState.
-function menuAction(action) {
-  menuOpen = nextMenuState(menuOpen, action);
+// R9: show the open/closed state. The scrim only exists on narrow screens.
+function applyMenu() {
   document.body.classList.toggle("menu-open", menuOpen);
   menuButton.setAttribute("aria-expanded", String(menuOpen));
-  scrim.hidden = !menuOpen;
+  menuLabel.textContent = menuOpen ? "Hide menu" : "Menu";
+  scrim.hidden = !(menuOpen && !wideScreen.matches);
+}
+
+// The narrow menu lies over the page, so it behaves like a dialog (U1):
+// focus moves into it when it opens and back to the button when it closes.
+const overlayMenu = () => menuOpen && !wideScreen.matches;
+
+// R9: apply the state decided by nextMenuState.
+function menuAction(action) {
+  const wasOverlay = overlayMenu();
+  menuOpen = nextMenuState(menuOpen, action, wideScreen.matches);
+  applyMenu();
+  if (!wasOverlay && overlayMenu()) menu.querySelector("a")?.focus();
+  else if (wasOverlay && !menuOpen && action !== "navigate") menuButton.focus();
+}
+
+// U1: Tab and Shift+Tab cycle through the menu button and the menu's links.
+function trapMenuFocus(e) {
+  if (e.key !== "Tab" || !overlayMenu()) return;
+  const items = [menuButton, ...menu.querySelectorAll("a")];
+  const next = nextFocusIndex(items.indexOf(document.activeElement), items.length, e.shiftKey);
+  e.preventDefault();
+  items[next].focus();
 }
 
 // R11: the section's photo behind the page; R12: the same photo as a banner.
@@ -124,10 +152,19 @@ function render() {
 
 async function start() {
   setBackdrop("films");
+  applyMenu();
   menuButton.addEventListener("click", () => menuAction("toggle"));
   scrim.addEventListener("click", () => menuAction("scrim"));
   menu.addEventListener("click", (e) => { if (e.target.closest("a")) menuAction("navigate"); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menuAction("escape"); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") menuAction("escape");
+    trapMenuFocus(e);
+  });
+  // R9: crossing 768 px starts over with the default for the new width.
+  wideScreen.addEventListener("change", () => {
+    menuOpen = menuStartsOpen(wideScreen.matches);
+    applyMenu();
+  });
   try {
     index = buildIndex(await loadAll((url) => fetch(url)));
   } catch (err) {

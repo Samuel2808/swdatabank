@@ -10,6 +10,7 @@
   --blue: #4dc3ff;                /* lightsaber blue: card hover */
   --red: #ff3b30;                 /* lightsaber red: laser bolts, errors */
   --sidebar: 220px;
+  --topbar: 56px;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
@@ -29,18 +30,29 @@ a { color: var(--accent); }
   filter: blur(6px) brightness(0.5);
 }
 
-/* R9: full-height menu bar on the left. */
-#sidebar {
-  position: fixed; top: 0; bottom: 0; left: 0; z-index: 3;
-  width: var(--sidebar); overflow-y: auto;
-  background: var(--bg); border-right: 1px solid var(--line);
-  padding: 20px 12px;
+/* R9, R16: the top bar, on every screen size, holds the menu button, the brand and the search bar. */
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 5;
+  height: var(--topbar); padding: 0 16px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
 }
 .brand {
   display: inline-block; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase;
   text-decoration: none; font-size: 15px; color: var(--accent);
 }
-#sidebar .brand { margin: 0 8px 20px; }
+
+/* R9 (changed in round 3): full-height menu bar on the left, below the top bar.
+   At every width it is hidden until opened; the button opens and closes it. */
+#sidebar {
+  position: fixed; top: var(--topbar); bottom: 0; left: 0; z-index: 3;
+  width: var(--sidebar); overflow-y: auto;
+  background: var(--bg); border-right: 1px solid var(--line);
+  padding: 20px 12px;
+  transform: translateX(-100%); visibility: hidden;
+  transition: transform 0.25s ease, visibility 0.25s;
+}
+body.menu-open #sidebar { transform: none; visibility: visible; }
 #menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 #menu a {
   display: flex; align-items: center; gap: 12px;
@@ -51,18 +63,23 @@ a { color: var(--accent); }
 #menu a[aria-current="page"] { color: var(--accent); border-left-color: var(--accent); background: var(--raised); }
 #menu svg { flex: none; }
 
-.topbar { display: none; }
 #menu-button {
-  display: grid; gap: 4px; padding: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; flex: none;
+  padding: 8px 12px; cursor: pointer; font: inherit; font-size: 14px; color: var(--text);
   background: none; border: 1px solid var(--line); border-radius: 8px;
 }
-#menu-button span { display: block; width: 20px; height: 2px; background: var(--text); }
+#menu-button:hover { border-color: var(--accent); }
+.bars { display: grid; gap: 4px; }
+.bars span { display: block; width: 18px; height: 2px; background: var(--text); }
 .scrim { position: fixed; inset: 0; z-index: 2; background: rgba(0, 0, 0, 0.6); }
 .scrim[hidden] { display: none; }
 
-.page { margin-left: var(--sidebar); min-height: 100vh; display: flex; flex-direction: column; }
+.page {
+  margin-left: 0; min-height: calc(100vh - var(--topbar)); display: flex; flex-direction: column;
+  transition: margin-left 0.25s ease;
+}
 main {
-  width: 100%; max-width: 960px; margin: 24px auto; padding: 0 0 20px;
+  width: calc(100% - 48px); max-width: 1400px; margin: 24px auto; padding: 0 0 20px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
 }
 main > :not(.banner) { margin-left: 20px; margin-right: 20px; }
@@ -160,23 +177,18 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   .sky { display: none; }
   #sidebar { transition: none; }
+  .page { transition: none; }
 }
 
-/* R9 + R8: on narrow screens the bar is hidden until the menu button opens it. */
+/* R9 (changed in round 3): on wide screens the open sidebar pushes the content aside. */
+@media (min-width: 768px) {
+  body.menu-open .page { margin-left: var(--sidebar); }
+}
+
+/* R9 + R8: on narrow screens the open sidebar lies over the content, with a scrim. */
 @media (max-width: 767px) {
-  .topbar {
-    display: flex; align-items: center; gap: 14px;
-    position: sticky; top: 0; z-index: 1;
-    padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--line);
-  }
-  #sidebar {
-    transform: translateX(-100%); visibility: hidden;
-    transition: transform 0.25s ease, visibility 0.25s;
-    width: min(80vw, var(--sidebar));
-  }
-  body.menu-open #sidebar { transform: none; visibility: visible; }
-  .page { margin-left: 0; }
-  main { margin: 12px auto; border-radius: 0; border-left: 0; border-right: 0; }
+  #sidebar { width: min(80vw, var(--sidebar)); }
+  main { width: 100%; margin: 12px auto; border-radius: 0; border-left: 0; border-right: 0; }
   main > :not(.banner) { margin-left: 16px; margin-right: 16px; }
   .search { width: calc(100% - 32px); }
   .banner { height: 120px; }
