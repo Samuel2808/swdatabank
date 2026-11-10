@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { buildIndex, titleFor, countText } from "../js/logic.js";
+import { buildIndex, titleFor, countText, paragraphsOf } from "../js/logic.js";
 
 const root = new URL("../", import.meta.url);
 const read = (name) => readFile(new URL(name, root), "utf8");
@@ -87,4 +87,23 @@ test("R4: the section box is worded as a filter, not as the site-wide search", (
 
 test("R11: the footer links to the photo credits", () => {
   assert.match(html, /<footer>[\s\S]*<a href="CREDITS\.md">CREDITS\.md<\/a>[\s\S]*<\/footer>/);
+});
+
+// ---- U10: long text facts read as full-width paragraphs (R5)
+
+test("R5: paragraphsOf joins hard-wrapped lines and keeps blank-line paragraphs", () => {
+  const crawl = "Turmoil has engulfed the\r\nGalactic Republic.\r\n\r\nHoping to resolve\r\nthe matter.";
+  assert.deepEqual(paragraphsOf(crawl), ["Turmoil has engulfed the Galactic Republic.", "Hoping to resolve the matter."]);
+});
+
+test("R5: paragraphsOf leaves short values as one paragraph and drops empty ones", () => {
+  assert.deepEqual(paragraphsOf("172"), ["172"]);
+  assert.deepEqual(paragraphsOf("a\n\n\n\nb\n"), ["a", "b"]);
+  assert.deepEqual(paragraphsOf("  spaced   out \n line "), ["spaced out line"]);
+});
+
+test("R5: a long text fact spans the whole width of the facts list", () => {
+  assert.match(app, /paragraphsOf\(/);
+  assert.match(css, /\.facts \.long \{[^}]*grid-column: 1 \/ -1/);
+  assert.doesNotMatch(css, /\.facts dd \{[^}]*white-space: pre-line/, "line breaks from the data are no longer kept");
 });
