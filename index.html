@@ -16,12 +16,17 @@
       <span id="menu-label">Menu</span>
     </button>
     <a class="brand" href="#/films">Databank</a>
+    <form class="site-search" role="search" action="#">
+      <input id="global-search" type="search" placeholder="Search the wiki…" aria-label="Search all sections" autocomplete="off" spellcheck="false">
+    </form>
   </header>
 
   <nav id="sidebar" aria-label="Sections">
     <ul id="menu"></ul>
   </nav>
   <div class="scrim" id="scrim" hidden></div>
+
+  <p id="announcer" class="visually-hidden" aria-live="polite"></p>
 
   <div class="page">
     <main id="main"><p class="status">Loading…</p></main>

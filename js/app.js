@@ -1,7 +1,7 @@
 // Rendering and routing only. All logic lives in logic.js and loader.js.
 import { SECTIONS } from "./sections.js";
 import {
-  buildIndex, searchEntries, factsOf, relatedOf, parseRoute,
+  buildIndex, searchEntries, searchAll, normalizeText, factsOf, relatedOf, parseRoute,
   nextMenuState, menuStartsOpen, nextFocusIndex,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
@@ -14,6 +14,8 @@ const menuButton = document.getElementById("menu-button");
 const menuLabel = document.getElementById("menu-label");
 const scrim = document.getElementById("scrim");
 const backdrop = document.getElementById("backdrop");
+const globalSearch = document.getElementById("global-search");
+const announcer = document.getElementById("announcer");
 // R9: 768 px and wider counts as a wide screen.
 const wideScreen = window.matchMedia("(min-width: 768px)");
 let index = null;
@@ -90,6 +92,11 @@ function subtitle(entry) {
   return r.model || r.classification || r.climate || r.birth_year || "";
 }
 
+function cards(entries) {
+  return el("ul", { class: "cards" }, ...entries.map((e) =>
+    el("li", {}, el("a", { class: "card", href: `#/${e.section}/${e.id}` }, e.name, el("small", { text: subtitle(e) })))));
+}
+
 function renderList(section) {
   const all = index.sections[section];
   const input = el("input", { class: "search", type: "search", placeholder: `Search ${labelOf(section).toLowerCase()}…`, "aria-label": "Search by name" });
@@ -99,8 +106,7 @@ function renderList(section) {
   function update() {
     const found = searchEntries(all, input.value);
     count.textContent = found.length ? `${found.length} of ${all.length}` : "No matches";
-    list.replaceChildren(...found.map((e) =>
-      el("li", {}, el("a", { class: "card", href: `#/${e.section}/${e.id}` }, e.name, el("small", { text: subtitle(e) })))));
+    list.replaceChildren(...cards(found).children);
   }
   input.addEventListener("input", update);
   update();
@@ -134,11 +140,56 @@ function renderNotFound(section) {
   );
 }
 
+// R16: results from every section, grouped by section.
+function renderSearch(query) {
+  const groups = searchAll(index, query);
+  const total = groups.reduce((n, g) => n + g.entries.length, 0);
+  let summary;
+  const body = [];
+  if (!normalizeText(query)) {
+    summary = "Type a name in the search bar to search every section.";
+    body.push(el("p", { class: "hint", text: summary }));
+  } else if (total === 0) {
+    summary = `Nothing matches “${query.trim()}” in any section.`;
+    body.push(el("p", { class: "empty", text: summary }),
+      el("p", { class: "hint", text: "Check the spelling, or try part of a name, such as “sky” for Skywalker." }));
+  } else {
+    summary = `${total} ${total === 1 ? "result" : "results"} for “${query.trim()}”`;
+    body.push(el("p", { class: "count", text: summary }));
+    for (const g of groups) {
+      const icon = el("span", { class: "icon" });
+      icon.innerHTML = ICONS[g.section]; // static markup from icons.js
+      body.push(el("section", { class: "result-group", "aria-label": g.label },
+        el("h2", {}, icon, g.label, el("span", { text: `(${g.entries.length})` })),
+        cards(g.entries)));
+    }
+  }
+  announcer.textContent = summary;
+  main.replaceChildren(banner("films"), el("h1", { text: "Search" }), ...body);
+}
+
+// R16: typing goes to #/search/<text>. The first keystroke adds a history entry;
+// the rest replace it, so Back leaves the search in one step.
+function onSearchInput() {
+  const target = `#/search/${encodeURIComponent(globalSearch.value)}`;
+  if (location.hash.startsWith("#/search")) {
+    history.replaceState(null, "", target);
+    render();
+  } else {
+    location.hash = target;
+  }
+}
+
 function render() {
   const route = parseRoute(location.hash, index);
-  renderMenu(route.section);
-  setBackdrop(route.section);
-  if (route.view === "detail") {
+  renderMenu(route.view === "search" ? null : route.section);
+  setBackdrop(route.view === "search" ? "films" : route.section);
+  if (route.view !== "search") globalSearch.value = "";
+  else if (globalSearch.value !== route.query) globalSearch.value = route.query;
+  if (route.view === "search") {
+    renderSearch(route.query);
+    document.title = "Search · Star Wars Databank";
+  } else if (route.view === "detail") {
     renderDetail(route.entry);
     document.title = `${route.entry.name} · Star Wars Databank`;
   } else if (route.view === "notfound") {
@@ -171,6 +222,8 @@ async function start() {
     main.replaceChildren(el("p", { class: "error", role: "alert", text: errorMessage(err) }));
     return;
   }
+  globalSearch.addEventListener("input", onSearchInput);
+  globalSearch.form.addEventListener("submit", (e) => e.preventDefault());
   window.addEventListener("hashchange", render);
   render();
 }

@@ -63,6 +63,19 @@ body.menu-open #sidebar { transform: none; visibility: visible; }
 #menu a[aria-current="page"] { color: var(--accent); border-left-color: var(--accent); background: var(--raised); }
 #menu svg { flex: none; }
 
+/* R16: the site-wide search bar fills the rest of the top bar. */
+.site-search { flex: 1; min-width: 0; max-width: 520px; margin: 0 0 0 auto; }
+#global-search {
+  display: block; width: 100%; padding: 8px 12px; font: inherit; color: var(--text);
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
+}
+#global-search::placeholder { color: var(--muted); }
+#global-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
 #menu-button {
   display: inline-flex; align-items: center; gap: 8px; flex: none;
   padding: 8px 12px; cursor: pointer; font: inherit; font-size: 14px; color: var(--text);
@@ -119,6 +132,11 @@ h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spa
   text-decoration: none; font-size: 14px;
 }
 .links span { color: var(--muted); }
+.result-group h2 { display: flex; align-items: center; gap: 8px; color: var(--text); }
+.result-group h2 span { color: var(--muted); }
+.result-group h2 svg { color: var(--accent); }
+.empty { font-size: 18px; margin: 8px 0 4px; }
+.hint { color: var(--muted); margin: 0 0 12px; }
 .back { display: inline-block; margin-top: 8px; font-size: 14px; }
 .status { color: var(--muted); padding: 20px; }
 .error { color: var(--red); border: 1px solid var(--red); border-radius: 8px; padding: 12px 14px; margin: 20px; }
@@ -193,6 +211,11 @@ footer {
   .search { width: calc(100% - 32px); }
   .banner { height: 120px; }
   .banner figcaption { padding: 4px 16px; }
+}
+/* R16 + R8: on phones the brand gives its room to the search bar. */
+@media (max-width: 559px) {
+  .topbar { gap: 10px; padding: 0 12px; }
+  .topbar .brand { display: none; }
 }
 @media (max-width: 480px) {
   .facts { grid-template-columns: 1fr; gap: 0; }
