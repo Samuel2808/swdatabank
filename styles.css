@@ -228,21 +228,22 @@ body.intro-active .ground { display: none; }
 .stars .twinkle { animation: twinkle 2.6s ease-in-out infinite alternate; }
 .intro-title {
   position: absolute; top: 50%; left: 50%; width: 92vw; margin: 0;
-  font-size: clamp(30px, 7vw, 76px); font-weight: 800; line-height: 1.1; letter-spacing: 0.04em;
+  font-size: clamp(30px, 6.5vw, 140px); font-weight: 800; line-height: 1.1; letter-spacing: 0.04em;
   text-align: center; text-transform: uppercase; color: var(--accent);
   opacity: 0; transform: translate(-50%, -50%) scale(1.8);
   animation: intro-title 4.5s ease-in 0.4s forwards;
 }
 .crawl-view {
-  position: absolute; inset: 0; overflow: hidden; perspective: 360px; perspective-origin: 50% 0;
+  position: absolute; inset: 0; overflow: hidden; perspective: 640px; perspective-origin: 50% 0;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 45%);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 45%);
 }
 .crawl {
-  position: absolute; top: 100%; left: 50%; width: min(88vw, 620px);
-  font-size: clamp(20px, 4.6vw, 34px); font-weight: 700; line-height: 1.45; text-align: justify;
+  position: absolute; top: 100%; left: 50%; width: clamp(300px, 66vw, 1500px);
+  font-size: clamp(20px, 2.8vw, 64px); font-weight: 700; line-height: 1.5;
+  text-align: justify; hyphens: auto; -webkit-hyphens: auto;
   color: var(--accent);
-  transform-origin: 50% 0; transform: translateX(-50%) rotateX(24deg) translateY(0);
+  transform-origin: 50% 0; transform: translateX(-50%) rotateX(20deg) translateY(0);
   animation: intro-crawl 26s linear 4s forwards;
 }
 .crawl h2 {
@@ -269,8 +270,8 @@ body.intro-active .ground { display: none; }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(0.02); }
 }
 @keyframes intro-crawl {
-  from { transform: translateX(-50%) rotateX(24deg) translateY(0); }
-  to { transform: translateX(-50%) rotateX(24deg) translateY(calc(-100% - 100vh)); }
+  from { transform: translateX(-50%) rotateX(20deg) translateY(0); }
+  to { transform: translateX(-50%) rotateX(20deg) translateY(calc(-100% - 100vh)); }
 }
 @keyframes twinkle {
   from { opacity: 1; }
@@ -320,7 +321,7 @@ body.intro-active .ground { display: none; }
   .topbar .brand { display: none; }
 }
 @media (max-width: 480px) {
-  .crawl { font-size: 18px; text-align: left; }
+  .crawl { width: 92vw; font-size: 18px; text-align: left; }
   .skip-hint { display: none; }
   .facts { grid-template-columns: 1fr; gap: 0; }
   .facts dd { margin-bottom: 8px; }
