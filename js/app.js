@@ -242,6 +242,9 @@ function render() {
   else renderList(route.section);
   document.title = titleFor(route);
   window.scrollTo(0, 0);
+  // U4: start keyboard and screen-reader users at the top of the new view,
+  // unless they are typing in the search bar or the intro is still showing.
+  if (introState === "done" && document.activeElement !== globalSearch) focusHeading();
 }
 
 async function start() {
