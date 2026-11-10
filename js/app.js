@@ -145,7 +145,11 @@ function cards(entries) {
 
 function renderList(section) {
   const all = index.sections[section];
-  const input = el("input", { class: "search", type: "search", placeholder: `Search ${labelOf(section).toLowerCase()}…`, "aria-label": "Search by name" });
+  const input = el("input", {
+    class: "search", type: "search",
+    placeholder: `Filter ${labelOf(section).toLowerCase()} by name…`,
+    "aria-label": `Filter ${labelOf(section).toLowerCase()} by name`,
+  });
   const count = el("p", { class: "count" });
   const list = el("ul", { class: "cards" });
 
