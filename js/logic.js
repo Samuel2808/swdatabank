@@ -186,3 +186,12 @@ export function countText(shown, total, label, query) {
   if (shown === total) return `Showing all ${total} ${noun}`;
   return `Showing ${shown} of ${total} ${noun}`;
 }
+
+// U10: "line one\r\nline two\r\n\r\nnext" -> ["line one line two", "next"].
+// SWAPI hard-wraps long text every ~35 characters; blank lines separate paragraphs.
+export function paragraphsOf(text) {
+  return String(text ?? "")
+    .split(/\r?\n\s*\r?\n/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}

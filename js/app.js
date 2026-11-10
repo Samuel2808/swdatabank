@@ -4,7 +4,7 @@ import {
   buildIndex, searchEntries, searchAll, normalizeText, factsOf, relatedOf, parseRoute,
   nextMenuState, menuStartsOpen, nextFocusIndex,
   starField, introStartState, nextIntroState, introKeyEnds,
-  titleFor, countText,
+  titleFor, countText, paragraphsOf,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { ICONS } from "./icons.js";
@@ -165,7 +165,16 @@ function renderList(section) {
 
 function renderDetail(entry) {
   const facts = el("dl", { class: "facts" });
-  for (const f of factsOf(entry)) facts.append(el("dt", { text: f.label }), el("dd", { text: f.value }));
+  for (const f of factsOf(entry)) {
+    const paras = paragraphsOf(f.value);
+    if (paras.length > 1 || f.value.length > 120) {
+      // U10: long text gets the full width, as real paragraphs.
+      facts.append(el("dt", { class: "long", text: f.label }),
+        el("dd", { class: "long" }, ...paras.map((p) => el("p", { text: p }))));
+    } else {
+      facts.append(el("dt", { text: f.label }), el("dd", { text: f.value }));
+    }
+  }
 
   const related = relatedOf(entry, index).flatMap((g) => [
     el("h2", { text: g.label }),
