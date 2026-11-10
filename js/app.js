@@ -169,10 +169,11 @@ function renderDetail(entry) {
     const paras = paragraphsOf(f.value);
     if (paras.length > 1 || f.value.length > 120) {
       // U10: long text gets the full width, as real paragraphs.
-      facts.append(el("dt", { class: "long", text: f.label }),
-        el("dd", { class: "long" }, ...paras.map((p) => el("p", { text: p }))));
+      facts.append(el("div", { class: "fact long" }, el("dt", { text: f.label }),
+        el("dd", {}, ...paras.map((p) => el("p", { text: p })))));
     } else {
-      facts.append(el("dt", { text: f.label }), el("dd", { text: f.value }));
+      // U12: each fact is a small box of label and value.
+      facts.append(el("div", { class: "fact" }, el("dt", { text: f.label }), el("dd", { text: f.value })));
     }
   }
 
