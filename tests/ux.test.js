@@ -107,3 +107,23 @@ test("R5: a long text fact spans the whole width of the facts list", () => {
   assert.match(css, /\.facts \.long \{[^}]*grid-column: 1 \/ -1/);
   assert.doesNotMatch(css, /\.facts dd \{[^}]*white-space: pre-line/, "line breaks from the data are no longer kept");
 });
+
+// ---- U11: text grows with the screen (R11: text stays easy to read)
+
+test("R11: the base text size grows from 16 px on phones to 20 px on large screens", () => {
+  assert.match(css, /\nhtml \{ font-size: clamp\(16px, [^;]+, 20px\); \}/);
+});
+
+test("R11: every font size is relative to the base size, so it grows with it", () => {
+  const fixed = css.match(/font-size: \d+px;/g) || [];
+  assert.deepEqual(fixed, [], "no fixed pixel font sizes");
+  assert.match(css, /\nbody \{[^}]*font: 1rem\/1\.5 /);
+});
+
+// ---- U12: facts fill the panel (R5)
+
+test("R5: facts are a wrapping grid of label/value boxes", () => {
+  assert.match(css, /\n\.facts \{[^}]*grid-template-columns: repeat\(auto-fill, /);
+  assert.match(css, /\n\.fact \{/);
+  assert.match(app, /el\("div", \{ class: "fact" \}/);
+});
