@@ -191,11 +191,84 @@ footer {
   to { transform: rotate(14deg); }
 }
 
+/* Headings that receive focus after navigation (U4) need no focus ring. */
+[tabindex="-1"]:focus { outline: none; }
+
+/* R15: the opening intro. A black, full-screen layer above everything. */
+body.intro-active { overflow: hidden; }
+body.intro-active .sky { display: none; }
+.intro { position: fixed; inset: 0; z-index: 10; overflow: hidden; background: var(--bg); }
+.intro[hidden] { display: none; }
+.stars { position: absolute; inset: 0; width: 100%; height: 100%; fill: var(--text); }
+.stars .twinkle { animation: twinkle 2.6s ease-in-out infinite alternate; }
+.intro-title {
+  position: absolute; top: 50%; left: 50%; width: 92vw; margin: 0;
+  font-size: clamp(30px, 7vw, 76px); font-weight: 800; line-height: 1.1; letter-spacing: 0.04em;
+  text-align: center; text-transform: uppercase; color: var(--accent);
+  opacity: 0; transform: translate(-50%, -50%) scale(1.8);
+  animation: intro-title 4.5s ease-in 0.4s forwards;
+}
+.crawl-view {
+  position: absolute; inset: 0; overflow: hidden; perspective: 360px; perspective-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 45%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 45%);
+}
+.crawl {
+  position: absolute; top: 100%; left: 50%; width: min(88vw, 620px);
+  font-size: clamp(20px, 4.6vw, 34px); font-weight: 700; line-height: 1.45; text-align: justify;
+  color: var(--accent);
+  transform-origin: 50% 0; transform: translateX(-50%) rotateX(24deg) translateY(0);
+  animation: intro-crawl 26s linear 4s forwards;
+}
+.crawl h2 {
+  margin: 0 0 0.8em; font-size: 1.15em; color: var(--accent);
+  text-align: center; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.crawl p { margin: 0 0 1em; }
+.skip-bar {
+  position: absolute; right: 16px; bottom: 16px; z-index: 1; margin: 0;
+  display: flex; align-items: center; gap: 12px;
+}
+.skip-hint { color: var(--muted); font-size: 13px; }
+#intro-skip {
+  padding: 10px 24px; cursor: pointer; font: inherit; font-weight: 700;
+  color: var(--bg); background: var(--accent); border: 0; border-radius: 8px;
+}
+#intro-skip:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
+@keyframes intro-title {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+  12% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
+  35% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  90% { opacity: 1; transform: translate(-50%, -50%) scale(0.06); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.02); }
+}
+@keyframes intro-crawl {
+  from { transform: translateX(-50%) rotateX(24deg) translateY(0); }
+  to { transform: translateX(-50%) rotateX(24deg) translateY(calc(-100% - 100vh)); }
+}
+@keyframes twinkle {
+  from { opacity: 1; }
+  to { opacity: 0.25; }
+}
+
 /* R13: no motion for visitors who ask for less. */
 @media (prefers-reduced-motion: reduce) {
   .sky { display: none; }
   #sidebar { transition: none; }
   .page { transition: none; }
+  .stars .twinkle { animation: none; }
+  .intro { overflow-y: auto; }
+  .stars { position: fixed; }
+  .intro-title {
+    position: relative; top: auto; left: auto; width: auto; margin: 14vh 16px 32px;
+    font-size: clamp(26px, 6vw, 52px); opacity: 1; transform: none; animation: none;
+  }
+  .crawl-view { position: relative; inset: auto; overflow: visible; perspective: none; -webkit-mask-image: none; mask-image: none; }
+  .crawl {
+    position: relative; top: auto; left: auto; width: auto; max-width: 620px; margin: 0 auto; padding: 0 16px 96px;
+    font-size: 19px; transform: none; animation: none;
+  }
 }
 
 /* R9 (changed in round 3): on wide screens the open sidebar pushes the content aside. */

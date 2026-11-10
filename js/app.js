@@ -3,10 +3,12 @@ import { SECTIONS } from "./sections.js";
 import {
   buildIndex, searchEntries, searchAll, normalizeText, factsOf, relatedOf, parseRoute,
   nextMenuState, menuStartsOpen, nextFocusIndex,
+  starField, introStartState, nextIntroState, introKeyEnds,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { ICONS } from "./icons.js";
 import { PHOTOS } from "./photos.js";
+import { INTRO } from "./intro.js";
 
 const main = document.getElementById("main");
 const menu = document.getElementById("menu");
@@ -16,10 +18,53 @@ const scrim = document.getElementById("scrim");
 const backdrop = document.getElementById("backdrop");
 const globalSearch = document.getElementById("global-search");
 const announcer = document.getElementById("announcer");
+const intro = document.getElementById("intro");
+const introCrawl = document.getElementById("intro-crawl");
+const introSkip = document.getElementById("intro-skip");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let introState = "done";
+
 // R9: 768 px and wider counts as a wide screen.
 const wideScreen = window.matchMedia("(min-width: 768px)");
 let index = null;
 let menuOpen = menuStartsOpen(wideScreen.matches);
+
+// R15: while the intro shows, everything behind it is inert (no clicks, no Tab).
+function setPageInert(inert) {
+  for (const node of document.querySelectorAll("body > :not(#intro)")) node.inert = inert;
+}
+
+// R15: draw the stars, fill in the text, and start the intro.
+function startIntro() {
+  document.getElementById("intro-stars").innerHTML = starField(260, 7)
+    .map((s, i) => `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" opacity="${s.o}"${i % 9 === 0 ? ' class="twinkle"' : ""}/>`)
+    .join(""); // numbers only, from starField
+  document.getElementById("intro-title").textContent = INTRO.title;
+  introCrawl.replaceChildren(el("h2", { text: INTRO.heading }), ...INTRO.paragraphs.map((p) => el("p", { text: p })));
+  introState = introStartState(reducedMotion.matches);
+  setPageInert(true);
+  introSkip.addEventListener("click", () => introEvent("skip"));
+  introCrawl.addEventListener("animationend", (e) => { if (e.target === introCrawl) introEvent("end"); });
+  introSkip.focus();
+}
+
+// R15: apply nextIntroState; when it says "done", show the page.
+function introEvent(event) {
+  if (introState === "done") return;
+  introState = nextIntroState(introState, event);
+  if (introState !== "done") return;
+  intro.hidden = true;
+  document.body.classList.remove("intro-active");
+  setPageInert(false);
+  focusHeading();
+}
+
+// Move focus to the current view's main heading (or the content if there is none).
+function focusHeading() {
+  const target = main.querySelector("h1") || main;
+  target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+}
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -202,12 +247,17 @@ function render() {
 }
 
 async function start() {
+  startIntro();
   setBackdrop("films");
   applyMenu();
   menuButton.addEventListener("click", () => menuAction("toggle"));
   scrim.addEventListener("click", () => menuAction("scrim"));
   menu.addEventListener("click", (e) => { if (e.target.closest("a")) menuAction("navigate"); });
   document.addEventListener("keydown", (e) => {
+    if (introState !== "done") {
+      if (introKeyEnds(e.key)) { e.preventDefault(); introEvent("skip"); }
+      return;
+    }
     if (e.key === "Escape") menuAction("escape");
     trapMenuFocus(e);
   });
