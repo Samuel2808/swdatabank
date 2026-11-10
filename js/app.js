@@ -251,6 +251,7 @@ async function start() {
   startIntro();
   setBackdrop("films");
   applyMenu();
+  document.querySelector(".skip-link").addEventListener("click", focusHeading);
   menuButton.addEventListener("click", () => menuAction("toggle"));
   scrim.addEventListener("click", () => menuAction("scrim"));
   menu.addEventListener("click", (e) => { if (e.target.closest("a")) menuAction("navigate"); });
