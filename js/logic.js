@@ -131,3 +131,39 @@ export function nextFocusIndex(current, count, back) {
   if (current < 0 || current >= count) return back ? count - 1 : 0;
   return (current + (back ? count - 1 : 1)) % count;
 }
+
+// R15: a sky of `count` stars in a 1000 x 1000 box, the same for the same seed.
+// Each star is { x, y, r (radius 0.4-1.8), o (opacity 0.3-1) }.
+export function starField(count, seed) {
+  let state = (seed >>> 0) || 1;
+  const random = () => { // xorshift32: small, fast and repeatable
+    state ^= state << 13; state >>>= 0;
+    state ^= state >>> 17;
+    state ^= state << 5; state >>>= 0;
+    return state / 4294967296;
+  };
+  const round = (v) => Math.round(v * 10) / 10;
+  return Array.from({ length: count }, () => {
+    const size = random() ** 3; // mostly small stars, a few bright ones
+    return { x: round(random() * 1000), y: round(random() * 1000), r: round(0.4 + size * 1.4), o: round(0.3 + random() * 0.7) };
+  });
+}
+
+// R15: the intro moves unless the visitor asks for reduced motion.
+export function introStartState(reducedMotion) {
+  return reducedMotion ? "still" : "playing";
+}
+
+// R15: "skip" (the button, Enter, Escape) ends the intro at any time; "end" (the
+// text has scrolled away) ends it only when it moves. "done" is final.
+export function nextIntroState(state, event) {
+  if (state === "done") return "done";
+  if (event === "skip") return "done";
+  if (event === "end" && state === "playing") return "done";
+  return state;
+}
+
+// R15: the keys that end the intro.
+export function introKeyEnds(key) {
+  return key === "Enter" || key === "Escape";
+}
