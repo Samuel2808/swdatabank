@@ -314,6 +314,8 @@ body.intro-active .ground { display: none; }
   .topbar .brand { display: none; }
 }
 @media (max-width: 480px) {
+  .crawl { font-size: 18px; text-align: left; }
+  .skip-hint { display: none; }
   .facts { grid-template-columns: 1fr; gap: 0; }
   .facts dd { margin-bottom: 8px; }
 }
