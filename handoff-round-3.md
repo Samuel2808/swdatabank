@@ -4,7 +4,7 @@ Read this with `problem.md`, `spec.md`, `CLAUDE.md` and `docs/decisions/` before
 
 ## State
 
-- Round 3 is on branch `round-3-intro-search`, opened as a pull request against `main` and **not merged**: the owner reviews it first.
+- `main` holds rounds 1 to 3. Round 3 was built on branch `round-3-intro-search` and, after the owner reviewed it, merged as pull request #2 (merge commit `e370778`), keeping its 32 commits. The branch was not deleted.
 - `npm test`: 99 tests, all passing. Each test name starts with the requirement ID it checks. The test-first commits (`02328b9`, `2b94e25`, `79b5591`, `dd45acb`, `decb120`, `1f51a2d`) fail on purpose at those commits.
 - Run: `python3 -m http.server 8000`, then open http://localhost:8000.
 
