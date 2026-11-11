@@ -61,11 +61,29 @@ test("R9: the menu button controls the sidebar and starts closed", () => {
   assert.match(button[0], /aria-expanded="false"/);
 });
 
-test("R9: below 768 px the sidebar is hidden until opened", () => {
-  const narrow = css.match(/@media \(max-width: 767px\) \{([\s\S]*?)\n\}/);
-  assert.ok(narrow, "styles.css has a max-width: 767px block");
-  assert.match(narrow[1], /#sidebar \{[^}]*transform: translateX\(-100%\)/);
-  assert.match(narrow[1], /body\.menu-open #sidebar \{[^}]*transform: none/);
+// R9 changed in round 3. Replaces the round 2 test "below 768 px the sidebar is
+// hidden until opened": the sidebar can now be hidden at every width.
+
+test("R9: the menu button sits in the top bar with a visible text label", () => {
+  const header = html.match(/<header class="topbar"[\s\S]*?<\/header>/);
+  assert.ok(header, "index.html has a top bar");
+  assert.match(header[0], /id="menu-button"/);
+  assert.match(header[0], /<span id="menu-label">Menu<\/span>/);
+});
+
+test("R9: at every width a closed sidebar is hidden and an open one is shown", () => {
+  assert.match(css, /\n#sidebar \{[^}]*transform: translateX\(-100%\)[^}]*visibility: hidden/);
+  assert.match(css, /\nbody\.menu-open #sidebar \{[^}]*transform: none;[^}]*visibility: visible/);
+  assert.doesNotMatch(css, /\n {2}#sidebar \{[^}]*transform: translateX\(-100%\)/, "not only inside a media block");
+});
+
+test("R9: on wide screens the open sidebar pushes the content and a closed one gives the width back", () => {
+  assert.match(css, /\n\.page \{[^}]*margin-left: 0/);
+  const wide = css.match(/@media \(min-width: 768px\) \{([\s\S]*?)\n\}/);
+  assert.ok(wide, "styles.css has a min-width: 768px block");
+  assert.match(wide[1], /body\.menu-open \.page \{[^}]*margin-left: var\(--sidebar\)/);
+  const max = css.match(/\nmain \{[^}]*max-width: (\d+)px/);
+  assert.ok(max && +max[1] >= 1200, "the content panel can grow into the freed width");
 });
 
 // ---- R10: icons

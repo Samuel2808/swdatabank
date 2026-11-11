@@ -7,28 +7,49 @@
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="js/app.js"></script>
 </head>
-<body>
+<body class="intro-active">
+  <!-- R15: the opening intro, shown on every load until it ends or is skipped. -->
+  <div id="intro" class="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <svg id="intro-stars" class="stars" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+    <p id="intro-title" class="intro-title"></p>
+    <div class="crawl-view">
+      <div id="intro-crawl" class="crawl"></div>
+    </div>
+    <p class="skip-bar">
+      <span class="skip-hint">or press Enter / Esc</span>
+      <button id="intro-skip" type="button">Skip</button>
+    </p>
+  </div>
+  <!-- end intro -->
+
+  <button class="skip-link" type="button">Skip to content</button>
+
   <div class="backdrop" id="backdrop" aria-hidden="true"></div>
 
   <header class="topbar">
-    <button id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Menu">
-      <span></span><span></span><span></span>
+    <button id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false">
+      <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span id="menu-label">Menu</span>
     </button>
     <a class="brand" href="#/films">Databank</a>
+    <form class="site-search" role="search" action="#">
+      <input id="global-search" type="search" placeholder="Search the wiki…" aria-label="Search all sections" autocomplete="off" spellcheck="false">
+    </form>
   </header>
 
   <nav id="sidebar" aria-label="Sections">
-    <a class="brand" href="#/films">Databank</a>
     <ul id="menu"></ul>
   </nav>
   <div class="scrim" id="scrim" hidden></div>
+
+  <p id="announcer" class="visually-hidden" aria-live="polite"></p>
 
   <div class="page">
     <main id="main"><p class="status">Loading…</p></main>
     <footer>
       Unofficial fan project, not affiliated with Lucasfilm or Disney.
       Data from SWAPI, the Star Wars API, bundled with this site.
-      Photos of real filming locations are public domain or CC0; see CREDITS.md.
+      Photos of real filming locations are public domain or CC0; see <a href="CREDITS.md">CREDITS.md</a>.
     </footer>
   </div>
 
@@ -43,6 +64,10 @@
       <path d="M8 17h66l46 2.2v1.6L74 23H8z"/>
       <path d="M54 17c4-5 14-6 20 0z"/>
     </svg>
+  </div>
+
+  <!-- R13 + U2: the droids walk on their own strip at the bottom, below all text. -->
+  <div class="ground" aria-hidden="true">
     <div class="droids">
       <svg id="r2d2" viewBox="0 0 40 52" aria-hidden="true">
         <path d="M8 17a12 12 0 0 1 24 0z"/>

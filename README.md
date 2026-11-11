@@ -2,7 +2,11 @@
 
 A small, fast, browser-only Star Wars encyclopedia. Browse six sections (films, characters, planets, species, starships, vehicles), search each by name, open any entry to see all its facts, and hop between related entries: a character's homeworld, a planet's residents, a ship's pilots, and so on.
 
-It looks like a fan page: a black-and-white design with Star Wars accents, a sidebar menu with an icon per section (behind a menu button on phones), blurred photos of real filming locations behind each section, and small X-wing and R2-D2/C-3PO silhouettes crossing the screen (turned off if your system asks for reduced motion).
+Every visit opens with a short intro: a star field, the title "Welcome to the Wiki of Star Wars", and a yellow opening text written for this site that scrolls away into the stars. Press Skip, Enter or Escape to go straight to the site. If your system asks for reduced motion, the title and text are shown still.
+
+A search bar at the top searches every section at once, ignoring upper/lower case, accents and punctuation ("padme" finds Padmé Amidala, "r2d2" finds R2-D2), and lists the results by section.
+
+It looks like a fan page: a black-and-white design with Star Wars accents, a sidebar menu with an icon per section that the Menu / Hide menu button shows and hides on any screen, blurred photos of real filming locations behind each section, and small X-wing and R2-D2/C-3PO silhouettes (the droids walk on their own strip at the bottom; all are turned off if your system asks for reduced motion).
 
 The data is a snapshot of [SWAPI](https://swapi.info) bundled in `data/`, so the site works offline and needs no API key or account. Unofficial fan project, not affiliated with Lucasfilm or Disney.
 
@@ -20,7 +24,7 @@ Then open http://localhost:8000. (`npm start` does the same.)
 npm test
 ```
 
-Uses Node's built-in test runner (Node 18 or newer); there is nothing to install. Tests cover the logic (search, facts, cross-links, routing, data loading and errors) and check the bundled data. Page layout is checked by hand.
+Uses Node's built-in test runner (Node 18 or newer); there is nothing to install. Tests cover the logic (search, facts, cross-links, routing, data loading and errors, menu, intro and focus rules) and check the bundled data and the wiring of the page and styles. How the page looks and moves is checked by hand.
 
 ## Refresh the data (optional, needs internet)
 

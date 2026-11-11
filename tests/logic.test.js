@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   parseRef, buildIndex, searchEntries, factsOf, relatedOf, labelFor, parseRoute, hrefFor, nextMenuState,
+  menuStartsOpen, nextFocusIndex,
 } from "../js/logic.js";
 
 // A tiny fixture shaped like SWAPI records.
@@ -132,19 +133,51 @@ test("R6: hrefFor builds the hash for an entry", () => {
   assert.equal(hrefFor("starships", "12"), "#/starships/12");
 });
 
-test("R9: the menu button opens a closed menu and closes an open one", () => {
-  assert.equal(nextMenuState(false, "toggle"), true);
-  assert.equal(nextMenuState(true, "toggle"), false);
+// R9 changed in round 3: the sidebar can be hidden on every screen size.
+// The round 2 tests assumed a menu that only existed on narrow screens; they now
+// name the screen width they check.
+
+test("R9: on any screen the menu button opens a closed menu and closes an open one", () => {
+  for (const wide of [false, true]) {
+    assert.equal(nextMenuState(false, "toggle", wide), true, `wide=${wide}`);
+    assert.equal(nextMenuState(true, "toggle", wide), false, `wide=${wide}`);
+  }
 });
 
-test("R9: following a section link, pressing Escape or clicking the scrim closes the menu", () => {
+test("R9: on narrow screens following a link, pressing Escape or clicking the scrim closes the menu", () => {
   for (const action of ["navigate", "escape", "scrim"]) {
-    assert.equal(nextMenuState(true, action), false, action);
-    assert.equal(nextMenuState(false, action), false, action);
+    assert.equal(nextMenuState(true, action, false), false, action);
+    assert.equal(nextMenuState(false, action, false), false, action);
+    assert.equal(nextMenuState(true, action), false, `${action} with no width given means narrow`);
+  }
+});
+
+test("R9: on wide screens only the menu button opens or closes the menu", () => {
+  for (const action of ["navigate", "escape", "scrim"]) {
+    assert.equal(nextMenuState(true, action, true), true, action);
+    assert.equal(nextMenuState(false, action, true), false, action);
   }
 });
 
 test("R9: an unknown action leaves the menu as it was", () => {
-  assert.equal(nextMenuState(true, "resize"), true);
-  assert.equal(nextMenuState(false, undefined), false);
+  assert.equal(nextMenuState(true, "resize", false), true);
+  assert.equal(nextMenuState(false, undefined, true), false);
+});
+
+test("R9: the menu starts open on wide screens and closed on narrow ones", () => {
+  assert.equal(menuStartsOpen(true), true);
+  assert.equal(menuStartsOpen(false), false);
+});
+
+test("R9: Tab moves through the open narrow menu and wraps around (U1)", () => {
+  assert.equal(nextFocusIndex(0, 6, false), 1);
+  assert.equal(nextFocusIndex(5, 6, false), 0, "Tab on the last link goes to the first");
+  assert.equal(nextFocusIndex(0, 6, true), 5, "Shift+Tab on the first link goes to the last");
+  assert.equal(nextFocusIndex(3, 6, true), 2);
+});
+
+test("R9: focus from outside the menu goes to its first or last link (U1)", () => {
+  assert.equal(nextFocusIndex(-1, 6, false), 0);
+  assert.equal(nextFocusIndex(-1, 6, true), 5);
+  assert.equal(nextFocusIndex(-1, 0, false), -1, "an empty menu has nothing to focus");
 });
