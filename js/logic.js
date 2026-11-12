@@ -102,6 +102,8 @@ export function parseRoute(hash, index) {
   // R16: "#/search/<text>" -> the search view; the text may itself contain "/".
   const search = path.match(/^search(?:\/(.*))?$/);
   if (search) return { view: "search", query: decodeSafely(search[1] ?? "") };
+  // R18: "#/favorites" -> the favorites view.
+  if (path === "favorites") return { view: "favorites" };
   const [section, id] = path.split("/");
   if (!SECTION_IDS.includes(section)) return { view: "list", section: "films" };
   if (!id) return { view: "list", section };
@@ -175,6 +177,7 @@ export function titleFor(route) {
   if (route.view === "detail") return `${route.entry.name} · ${SITE}`;
   if (route.view === "notfound") return `Not found · ${SITE}`;
   if (route.view === "search") return `Search · ${SITE}`;
+  if (route.view === "favorites") return `Favorites · ${SITE}`;
   const section = SECTIONS.find((s) => s.id === route.section);
   return `${section ? section.label : "Films"} · ${SITE}`;
 }
@@ -194,4 +197,42 @@ export function paragraphsOf(text) {
     .split(/\r?\n\s*\r?\n/)
     .map((p) => p.replace(/\s+/g, " ").trim())
     .filter(Boolean);
+}
+
+// R18: a favorite is stored as "section/id", e.g. "people/1".
+export function favoriteKey(section, id) {
+  return `${section}/${id}`;
+}
+
+// R18: the favorites read back from stored text. Anything that is not a list of
+// "section/id" keys with a known section is dropped; duplicates are kept once.
+export function parseFavorites(text) {
+  let value;
+  try { value = JSON.parse(text); } catch { return []; }
+  if (!Array.isArray(value)) return [];
+  const keys = value.filter((k) => typeof k === "string" && /^[a-z]+\/\d+$/.test(k) && SECTION_IDS.includes(k.split("/")[0]));
+  return [...new Set(keys)];
+}
+
+// R18: a new list with `key` added at the end, or removed if it was there.
+export function toggleFavorite(list, key) {
+  return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
+}
+
+// R18: the favorites grouped by section in menu order, each group in the
+// section's list order; keys with no entry in the snapshot are skipped.
+export function favoriteGroups(index, list) {
+  const keys = new Set(list);
+  return SECTIONS
+    .map((s) => ({
+      section: s.id,
+      label: s.label,
+      entries: (index.sections[s.id] || []).filter((e) => keys.has(favoriteKey(e.section, e.id))),
+    }))
+    .filter((g) => g.entries.length > 0);
+}
+
+// R18: the text of the button on a detail page.
+export function favoriteButtonText(on) {
+  return on ? "★ In favorites" : "☆ Add to favorites";
 }
