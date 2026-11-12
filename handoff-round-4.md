@@ -4,7 +4,7 @@ Read this with `problem.md`, `spec.md`, `CLAUDE.md` and `docs/decisions/` before
 
 ## State
 
-- Round 4 was built on branch `round-4-favorites-filters` (17 commits on top of `main` at `dc0796e`, the commit where the owner added the round 4 requirements). It is pushed and open as pull request #3 (https://github.com/Samuel2808/swdatabank/pull/3) against `main`. **When this handoff was written, the PR was not merged.** Check `gh pr view 3` first: if it is still open, ask the owner before building round 5 on `main`, or round 5 will not contain round 4.
+- Round 4 was built on branch `round-4-favorites-filters` (17 commits on top of `main` at `dc0796e`, the commit where the owner added the round 4 requirements). It was pushed as pull request #3 (https://github.com/Samuel2808/swdatabank/pull/3), reviewed by the owner and merged into `main` (merge commit 37ccb71).
 - `npm test`: 142 tests, all passing (99 from rounds 1–3, 43 new). Every test name starts with the requirement ID it checks.
 - Test-first commits that fail on purpose at those commits: `321bf9e` (R17), `d40715e` (R18), `1512338` (R19). `5339aca` (R8) passes except one test, the one for the filter and favorites controls, which passes from `6640dce` on.
 - The repository has no CI. Nothing runs on a PR; run `npm test` yourself.
@@ -54,7 +54,6 @@ Also: `README.md` describes the new features; `spec.md` has a round 4 section an
 
 ## Unresolved and open points
 
-- **PR #3 is not merged** (see State).
 - Not checked by hand: watching a full 330 s cycle to see the silhouettes rest and come back. The R17 tests check the keyframes; the browser check covered filters, favorites and the 375 px width only.
 - Carried over from round 3, still open: the X-wing can still pass over text (now only about 4 s every 5.5 minutes); with reduced motion the silhouettes are hidden rather than shown still; the intro adds about 30 s on every load; the search view (and now the favorites view) always use the Films photo.
 - Data quirks the filters show as they are: "Galatic Basic" (a SWAPI typo) is a separate language option from "Galactic Basic"; values such as "unknown", "n/a" and "none" are ordinary options; 32 characters have no species in SWAPI, including most humans, so they appear under "Not listed", not "Human".
