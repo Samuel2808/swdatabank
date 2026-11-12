@@ -67,6 +67,7 @@ The page state lives in the URL hash, so links and the browser's back button wor
 - One column of content on narrow screens. Cards sit in a CSS grid that wraps (`repeat(auto-fill, minmax(…))`).
 - Long values wrap (`overflow-wrap: anywhere`). At 375 px wide there is no horizontal scrolling.
 - R8 is checked by hand in the browser at 375 px. It is layout, so there is no automated test.
+  > **Changed in round 4.** R8 now has automated tests; see "Layout checks (R8, changed)" in the round 4 section. The browser check at 375 px stays.
 - The footer says this is an unofficial fan project, not affiliated with Lucasfilm or Disney, with data from SWAPI.
 
 ## Round 2: fan-page look (R9–R14)
@@ -113,6 +114,8 @@ The page state lives in the URL hash, so links and the browser's back button wor
 ### Animations (R13)
 
 - Silhouettes are inline SVG in `index.html`, drawn for this project, in solid black or white. They are decoration only (`aria-hidden="true"`) and never catch clicks (`pointer-events: none`).
+> **Changed in round 4.** The timings below (a 14 s and a 30 s loop) are replaced by one 330 s cycle; see "Animations play, then rest (R17)" in the round 4 section.
+
 - **X-wing:** flies left to right across the upper part of the screen in about 4 s, then waits; the cycle repeats every 14 s. While it crosses it fires two short red laser bolts forward.
 - **R2-D2 and C-3PO:** walk together along the bottom of the screen from right to left, taking about 30 s to cross, on a loop. R2-D2 rocks side to side; C-3PO's legs swing.
 - Visitors whose system asks for reduced motion (`prefers-reduced-motion: reduce`) see no animation: the silhouettes are hidden.
@@ -207,18 +210,86 @@ Each fix is listed separately so it can be reviewed on its own. Where a fix has 
 - R13 (U2): the droids walk inside the ground strip and the page leaves room for it.
 - How the intro looks and moves, the search results page and the sidebar toggle are checked by hand in the browser at 375 × 812 and at desktop width.
 
+## Round 4: layout tests, resting animations, favorites, filters (R8, R17, R18, R19)
+
+The owner accepted every suggested default to the twelve questions asked at the start of round 4. They are written into the sections below.
+
+### Layout checks (R8, changed)
+
+- **Before (round 1):** R8 was checked by hand in the browser at 375 px; no test named it.
+- **Now:** `tests/layout.test.js` checks R8 every time `npm test` runs. `npm test` runs in Node with no browser and the project installs nothing, so the tests read `index.html` and `styles.css` instead of measuring a rendered page. They cover every view, because every view is styled by the same `styles.css`:
+  - `index.html` has `<meta name="viewport" content="width=device-width, initial-scale=1">`.
+  - **Nothing is wider than 375 px.** Every `width`, `min-width` and `flex-basis`, and the smallest column of every `minmax(…)`, outside a `@media (min-width: …)` block, has a smallest possible size of at most 375 px. A plain length counts as itself (`rem` as 16 px, the root size at 375 px); `clamp(a, b, c)` counts as `a`; `min(…)` as its smallest argument; anything that depends on `%` or `vw` counts as fluid. The longest `max-width` does not matter, since it never forces width.
+  - Form controls (`select`, `input`, `button` in the filter and favorites areas) have `max-width: 100%`, so long option text cannot push them past the screen.
+  - The fixed animation layers (`.sky`, `.ground`) clip what they hold (`overflow: hidden`), so the X-wing and the droids, which start and end off screen, never widen the page.
+  - **Long names and words wrap:** `body` has `overflow-wrap: anywhere`, and no rule turns wrapping off (`white-space: nowrap`) except the visually hidden screen-reader text.
+- How the page looks at 375 px is still also checked by hand in the browser.
+- Recorded in decision 0006.
+
+### Animations play, then rest (R17)
+
+- The X-wing (with its laser bolts) and R2-D2 and C-3PO now share one CSS cycle of **330 s**: they play once at the start of the cycle, about 30 s, then rest for about 5 minutes, off screen, before playing again.
+  - The X-wing waits 1 s, then crosses in about 4.3 s (`fly`: from `0%` to `1.3%` of the cycle, then holds off screen at the right until `100%`). The two laser bolts fire during the crossing, at the same moments as before (`fire`, converted from the old 14 s percentages).
+  - The droids walk across the strip in about 30 s (`walk`: from `0%` to `9.1%`, then hold off screen at the left until `100%`). R2-D2 keeps rocking and C-3PO's legs keep swinging; while they rest they are off screen, so this is not seen.
+- **When the cycle starts:** the silhouettes and the ground strip are `display: none` while the intro shows (round 3). A CSS animation starts when its element is first shown, so the first play comes right after the intro ends, and the cycle then runs on. Moving between pages does not restart it, because the page never reloads (hash routing). A reload plays the intro again, then the animations.
+- Still pure CSS `@keyframes`, as in decision 0003: no JavaScript timer. Reduced motion still hides the silhouettes.
+- Recorded in decision 0007.
+
+### Favorites (R18)
+
+- **Button:** every detail view has a button under its title: "☆ Add to favorites" when the entry is not a favorite, "★ In favorites" when it is. Pressing it switches between the two. The change is also read out by the polite live region ("Added to favorites" / "Removed from favorites").
+- **Menu:** a seventh menu item, "Favorites", after the six sections, with its own icon drawn for this project (a star outline), at `#/favorites`. It is marked current on that view.
+- **Favorites view:** heading "Favorites", then one group per section that has favorites, in menu order, each with the section's icon, label and count, and its entries as the usual cards in that section's list order (the same layout as the search results, R16). When there are none: "No favorites yet." and the hint "Open any entry and press “☆ Add to favorites” to keep it here." The view uses the Films photo, like the search view. The tab title is "Favorites · Star Wars Databank".
+- **Storage:** favorites are kept in the browser's `localStorage` under `swdatabank.favorites`, as a JSON array of keys such as `"people/1"`, in the order they were added. They stay after the page is reloaded or closed. Nothing is sent anywhere (R2), and there is no account.
+- If storage cannot be used (some private windows throw on `localStorage`), favorites still work until the page is closed, and the favorites button and view show the note "Favorites can't be saved in this browser and will be lost when you close the page."
+- **Pure parts (`js/logic.js`):** `favoriteKey(section, id)`, `parseFavorites(text)` (reads stored text; anything that is not an array of `section/id` strings with a known section is dropped, and junk gives `[]`), `toggleFavorite(list, key)` (adds at the end or removes, never duplicates), `favoriteGroups(index, list)` (groups in menu order, entries in list order, keys whose entry is not in the snapshot are skipped), `favoriteButtonText(on)`. `parseRoute` returns `{ view: "favorites" }` for `#/favorites`, and `titleFor` gives its title.
+- **Store (`js/store.js`):** `createFavoriteStore(storage)` takes a storage object (`getItem`/`setItem`), the way the loader takes a fetch function, so tests can pass a fake. It reads once, writes after every change, and has `list()`, `has(key)`, `toggle(key)` and `persistent` (false when reading or writing throws, or when no storage is given).
+- Not added (not asked for): stars on list cards, "remove all", favorites in the site-wide search.
+
+### Filters per section (R19)
+
+- **Fields** (`FILTERS` in `js/sections.js`):
+
+  | Section    | Filters |
+  |------------|---------|
+  | Films      | Release year (`release_date`, the year), Director |
+  | Characters | Gender, Species (reference), Homeworld (reference) |
+  | Planets    | Climate (list), Terrain (list) |
+  | Species    | Classification, Language |
+  | Starships  | Class (`starship_class`), Manufacturer (list) |
+  | Vehicles   | Class (`vehicle_class`), Manufacturer (list) |
+
+- **Values:**
+  - A *list* field holds several values separated by commas (and `/` for manufacturers): a planet with climate "temperate, arid" counts as both "temperate" and "arid". A piece that is only a company suffix ("Inc", "Inc.", "Incorporated") is joined back to the name before it, so "Gallofree Yards, Inc." stays one manufacturer.
+  - A *reference* field shows the names of the entries it points to (a character's species "Human"…). An entry with no reference gets the value "Not listed": 32 characters have no species in the data.
+  - Values are trimmed and compared ignoring upper/lower case, so "Starfighter" and "starfighter" are one option. The option shows the spelling found first in the data. Values such as "unknown" and "n/a" are options like any other.
+- **Controls:** under the name box, a group "Filter by" with one dropdown per field. Each starts at "Any", followed by the values found in that section, sorted alphabetically (years in order, "Not listed" last), each with the number of entries that have it, e.g. "arid (9)". The counts are for the whole section and do not change as other filters are set.
+- **Combining:** an entry is shown when it has the chosen value for every field that is not "Any" (AND across fields), and its name matches the name box (R4). The count line says how many are shown. When nothing is left: "No planets match these filters." or, with text in the name box, "No planets match “text” with these filters."
+- **Clearing:** a "Clear filters" button sets every dropdown back to "Any" and empties the name box.
+- Switching section resets the filters, like the name box. They are not kept in the URL or between visits.
+- **Pure parts (`js/logic.js`):** `filterValues(entry, filter, index)` (the option values an entry has for a field), `filterOptions(entries, filter, index)` (`{ value, label, count }`, sorted), `applyFilters(entries, chosen, section, index)` (`chosen` maps a field to an option value; `""` or missing means "Any"; `section` says which `FILTERS` apply). `countText` gains a fifth argument saying whether any filter is set.
+
+### Testing round 4
+
+- R8: `tests/layout.test.js`, as listed above.
+- R17: the X-wing, the laser bolts and the droids use the same cycle of 300–360 s, repeated forever; the X-wing's flight ends in the first 2 % of the cycle and the droids' walk in the first 10 %, each then holding off screen to `100%`; the silhouettes are still hidden during the intro and for reduced motion.
+- R18: `favoriteKey`, `parseFavorites`, `toggleFavorite`, `favoriteGroups`, `favoriteButtonText`, `parseRoute` and `titleFor` for favorites; `createFavoriteStore` with a fake storage (keeps favorites across a new store on the same storage, i.e. a reload; survives a throwing storage, with `persistent` false); a Favorites icon; the app wires the button, the menu item and the view.
+- R19: `FILTERS` names only fields that exist in the data; `filterValues`, `filterOptions` and `applyFilters` with a fixture and with the real data (climate lists, merged case, "Not listed" species, release years, "Inc." manufacturers); filters combine with the name search; `countText` with filters; the app has the dropdowns and the clear button.
+- How favorites and filters look, and that the animations rest, are also checked by hand in the browser at 375 × 812 and at desktop width.
+
 ## Code layout
 
 ```
 index.html          page shell
 styles.css          styling
-js/sections.js      section table and the reference-field mapping
+js/sections.js      section table, the reference-field mapping and the filters per section (R19)
 js/icons.js         one inline SVG icon per section (R10)
 js/photos.js        one photo per section, with place and credits (R11, R12)
 js/intro.js         the intro's title and opening text (R15)
 img/photos/*.jpg    the bundled photos
 CREDITS.md          source page, author and licence of each photo
 js/logic.js         pure functions: parse references, build the index, search (R4, R16), facts and related lists, routes, menu, focus and intro state, star field
+js/store.js         keeps the favorites (R18) in a storage object passed in (localStorage in the browser, a fake in tests)
 js/loader.js        loads the six JSON files; takes a fetch function so tests can pass a fake one
 js/app.js           DOM rendering and hash routing (not unit tested)
 scripts/fetch-data.mjs  refreshes data/ from SWAPI (developer only)

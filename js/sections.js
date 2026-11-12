@@ -27,3 +27,37 @@ export const REF_FIELDS = {
 
 // SWAPI bookkeeping fields that are not facts about the entry (R5).
 export const HIDDEN_FIELDS = new Set(["url", "created", "edited"]);
+
+// R19: the fields each section can be filtered by. `kind` says how a record's
+// value turns into options:
+//   text — the value itself;
+//   list — several values separated by commas (`split` adds more separators);
+//   year — the year at the start of a date;
+//   ref  — the names of the entries it refers to (R6), or "Not listed".
+export const FILTERS = {
+  films: [
+    { field: "release_date", label: "Release year", kind: "year" },
+    { field: "director", label: "Director", kind: "text" },
+  ],
+  people: [
+    { field: "gender", label: "Gender", kind: "text" },
+    { field: "species", label: "Species", kind: "ref" },
+    { field: "homeworld", label: "Homeworld", kind: "ref" },
+  ],
+  planets: [
+    { field: "climate", label: "Climate", kind: "list" },
+    { field: "terrain", label: "Terrain", kind: "list" },
+  ],
+  species: [
+    { field: "classification", label: "Classification", kind: "text" },
+    { field: "language", label: "Language", kind: "text" },
+  ],
+  starships: [
+    { field: "starship_class", label: "Class", kind: "text" },
+    { field: "manufacturer", label: "Manufacturer", kind: "list", split: "/" },
+  ],
+  vehicles: [
+    { field: "vehicle_class", label: "Class", kind: "text" },
+    { field: "manufacturer", label: "Manufacturer", kind: "list", split: "/" },
+  ],
+};

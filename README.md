@@ -6,7 +6,9 @@ Every visit opens with a short intro: a star field, the title "Welcome to the Wi
 
 A search bar at the top searches every section at once, ignoring upper/lower case, accents and punctuation ("padme" finds Padmé Amidala, "r2d2" finds R2-D2), and lists the results by section.
 
-It looks like a fan page: a black-and-white design with Star Wars accents, a sidebar menu with an icon per section that the Menu / Hide menu button shows and hides on any screen, blurred photos of real filming locations behind each section, and small X-wing and R2-D2/C-3PO silhouettes (the droids walk on their own strip at the bottom; all are turned off if your system asks for reduced motion).
+Each section can also be filtered by its own fields (characters by gender, species or homeworld, planets by climate or terrain, starships and vehicles by class or manufacturer, films by release year or director); the filters combine with each other and with the name box, and "Clear filters" resets them. Press "☆ Add to favorites" on any entry to keep it in the Favorites menu item; favorites are saved in your browser only.
+
+It looks like a fan page: a black-and-white design with Star Wars accents, a sidebar menu with an icon per section that the Menu / Hide menu button shows and hides on any screen, blurred photos of real filming locations behind each section, and small X-wing and R2-D2/C-3PO silhouettes that play once and then rest for about 5 minutes (the droids walk on their own strip at the bottom; all are turned off if your system asks for reduced motion).
 
 The data is a snapshot of [SWAPI](https://swapi.info) bundled in `data/`, so the site works offline and needs no API key or account. Unofficial fan project, not affiliated with Lucasfilm or Disney.
 
@@ -24,7 +26,7 @@ Then open http://localhost:8000. (`npm start` does the same.)
 npm test
 ```
 
-Uses Node's built-in test runner (Node 18 or newer); there is nothing to install. Tests cover the logic (search, facts, cross-links, routing, data loading and errors, menu, intro and focus rules) and check the bundled data and the wiring of the page and styles. How the page looks and moves is checked by hand.
+Uses Node's built-in test runner (Node 18 or newer); there is nothing to install. Tests cover the logic (search, facts, cross-links, routing, data loading and errors, menu, intro and focus rules) and check the bundled data and the wiring of the page and styles, including that nothing in the layout is wider than a 375 px phone. How the page looks and moves is also checked by hand.
 
 ## Refresh the data (optional, needs internet)
 

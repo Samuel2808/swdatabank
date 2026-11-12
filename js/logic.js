@@ -1,5 +1,5 @@
 // Pure functions: no DOM, no network. Everything here is unit tested.
-import { SECTIONS, SECTION_IDS, REF_FIELDS, HIDDEN_FIELDS } from "./sections.js";
+import { SECTIONS, SECTION_IDS, REF_FIELDS, HIDDEN_FIELDS, FILTERS } from "./sections.js";
 
 // A SWAPI URL ending in "/api/planets/1" -> { section: "planets", id: "1" }; anything else -> null.
 export function parseRef(value) {
@@ -102,6 +102,8 @@ export function parseRoute(hash, index) {
   // R16: "#/search/<text>" -> the search view; the text may itself contain "/".
   const search = path.match(/^search(?:\/(.*))?$/);
   if (search) return { view: "search", query: decodeSafely(search[1] ?? "") };
+  // R18: "#/favorites" -> the favorites view.
+  if (path === "favorites") return { view: "favorites" };
   const [section, id] = path.split("/");
   if (!SECTION_IDS.includes(section)) return { view: "list", section: "films" };
   if (!id) return { view: "list", section };
@@ -175,14 +177,18 @@ export function titleFor(route) {
   if (route.view === "detail") return `${route.entry.name} · ${SITE}`;
   if (route.view === "notfound") return `Not found · ${SITE}`;
   if (route.view === "search") return `Search · ${SITE}`;
+  if (route.view === "favorites") return `Favorites · ${SITE}`;
   const section = SECTIONS.find((s) => s.id === route.section);
   return `${section ? section.label : "Films"} · ${SITE}`;
 }
 
 // U6: the line under the section filter, e.g. "Showing 3 of 82 characters".
-export function countText(shown, total, label, query) {
+// R19: `filtered` says whether any filter is set, so an empty result can say why.
+export function countText(shown, total, label, query, filtered = false) {
   const noun = label.toLowerCase();
-  if (shown === 0) return `No ${noun} match “${String(query ?? "").trim()}”.`;
+  const text = String(query ?? "").trim();
+  if (shown === 0 && filtered) return text ? `No ${noun} match “${text}” with these filters.` : `No ${noun} match these filters.`;
+  if (shown === 0) return `No ${noun} match “${text}”.`;
   if (shown === total) return `Showing all ${total} ${noun}`;
   return `Showing ${shown} of ${total} ${noun}`;
 }
@@ -194,4 +200,103 @@ export function paragraphsOf(text) {
     .split(/\r?\n\s*\r?\n/)
     .map((p) => p.replace(/\s+/g, " ").trim())
     .filter(Boolean);
+}
+
+// R18: a favorite is stored as "section/id", e.g. "people/1".
+export function favoriteKey(section, id) {
+  return `${section}/${id}`;
+}
+
+// R18: the favorites read back from stored text. Anything that is not a list of
+// "section/id" keys with a known section is dropped; duplicates are kept once.
+export function parseFavorites(text) {
+  let value;
+  try { value = JSON.parse(text); } catch { return []; }
+  if (!Array.isArray(value)) return [];
+  const keys = value.filter((k) => typeof k === "string" && /^[a-z]+\/\d+$/.test(k) && SECTION_IDS.includes(k.split("/")[0]));
+  return [...new Set(keys)];
+}
+
+// R18: a new list with `key` added at the end, or removed if it was there.
+export function toggleFavorite(list, key) {
+  return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
+}
+
+// R18: the favorites grouped by section in menu order, each group in the
+// section's list order; keys with no entry in the snapshot are skipped.
+export function favoriteGroups(index, list) {
+  const keys = new Set(list);
+  return SECTIONS
+    .map((s) => ({
+      section: s.id,
+      label: s.label,
+      entries: (index.sections[s.id] || []).filter((e) => keys.has(favoriteKey(e.section, e.id))),
+    }))
+    .filter((g) => g.entries.length > 0);
+}
+
+// R18: the text of the button on a detail page.
+export function favoriteButtonText(on) {
+  return on ? "★ In favorites" : "☆ Add to favorites";
+}
+
+// R19: the option shown for an entry with no reference, e.g. a character with no species.
+export const NOT_LISTED = "Not listed";
+const COMPANY_SUFFIX = /^(inc\.?|incorporated|ltd\.?)$/i;
+
+// R19: the values an entry has for one filter, as written in the data (trimmed).
+function filterLabels(entry, filter, index) {
+  const value = entry.record[filter.field];
+  if (filter.kind === "ref") {
+    const urls = Array.isArray(value) ? value : value ? [value] : [];
+    const names = urls.map((url) => {
+      const ref = parseRef(url);
+      return ref && index.get(ref.section, ref.id)?.name;
+    }).filter(Boolean);
+    return names.length ? names : [NOT_LISTED];
+  }
+  const text = String(value ?? "").trim();
+  if (filter.kind === "year") return [text.slice(0, 4)];
+  if (filter.kind !== "list") return [text];
+  const separators = new RegExp(`[,${filter.split ?? ""}]`);
+  const parts = [];
+  for (const piece of text.split(separators).map((p) => p.trim()).filter(Boolean)) {
+    // "Gallofree Yards, Inc." is one company, not two.
+    if (COMPANY_SUFFIX.test(piece) && parts.length) parts[parts.length - 1] += `, ${piece}`;
+    else parts.push(piece);
+  }
+  return parts;
+}
+
+// R19: the option values (lower case, no duplicates) an entry has for a filter.
+export function filterValues(entry, filter, index) {
+  return [...new Set(filterLabels(entry, filter, index).map((v) => v.toLowerCase()))];
+}
+
+// R19: the options of one filter's dropdown: { value, label, count }, sorted by
+// label (numbers in order, "Not listed" last). The label is the spelling found
+// first; the count is how many entries have the value.
+export function filterOptions(entries, filter, index) {
+  const options = new Map();
+  for (const entry of entries) {
+    const seen = new Set();
+    for (const label of filterLabels(entry, filter, index)) {
+      const value = label.toLowerCase();
+      if (seen.has(value)) continue;
+      seen.add(value);
+      if (!options.has(value)) options.set(value, { value, label, count: 0 });
+      options.get(value).count++;
+    }
+  }
+  const last = NOT_LISTED.toLowerCase();
+  return [...options.values()].sort((a, b) =>
+    (a.value === last) - (b.value === last) ||
+    a.label.localeCompare(b.label, "en", { sensitivity: "base", numeric: true }));
+}
+
+// R19: the entries that have the chosen value of every filter. `chosen` maps a
+// field to an option value; "" or a missing field means "Any".
+export function applyFilters(entries, chosen, section, index) {
+  const active = (FILTERS[section] || []).filter((f) => chosen[f.field]);
+  return entries.filter((e) => active.every((f) => filterValues(e, f, index).includes(chosen[f.field])));
 }

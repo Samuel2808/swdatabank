@@ -1,12 +1,15 @@
 // Rendering and routing only. All logic lives in logic.js and loader.js.
-import { SECTIONS } from "./sections.js";
+import { SECTIONS, FILTERS } from "./sections.js";
 import {
   buildIndex, searchEntries, searchAll, normalizeText, factsOf, relatedOf, parseRoute,
   nextMenuState, menuStartsOpen, nextFocusIndex,
   starField, introStartState, nextIntroState, introKeyEnds,
   titleFor, countText, paragraphsOf,
+  favoriteKey, favoriteGroups, favoriteButtonText,
+  filterOptions, applyFilters,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
+import { createFavoriteStore } from "./store.js";
 import { ICONS } from "./icons.js";
 import { PHOTOS } from "./photos.js";
 import { INTRO } from "./intro.js";
@@ -29,6 +32,14 @@ let introState = "done";
 const wideScreen = window.matchMedia("(min-width: 768px)");
 let index = null;
 let menuOpen = menuStartsOpen(wideScreen.matches);
+
+// R18: favorites live in localStorage. Even reading window.localStorage can throw
+// when the browser blocks storage; the store then keeps them in memory.
+function browserStorage() {
+  try { return window.localStorage; } catch { return undefined; }
+}
+const favorites = createFavoriteStore(browserStorage());
+const NOT_SAVED = "Favorites can't be saved in this browser and will be lost when you close the page.";
 
 // R15: while the intro shows, everything behind it is inert (no clicks, no Tab).
 function setPageInert(inert) {
@@ -79,15 +90,23 @@ function el(tag, attrs = {}, ...children) {
 
 const labelOf = (id) => SECTIONS.find((s) => s.id === id).label;
 
-// R9, R10: the sidebar menu, one link with an icon per section.
+function iconFor(id) {
+  const icon = el("span", { class: "icon" });
+  icon.innerHTML = ICONS[id]; // static markup from icons.js, never user input
+  return icon;
+}
+
+// R9, R10: the sidebar menu, one link with an icon per section,
+// then Favorites (R18).
 function renderMenu(current) {
-  menu.replaceChildren(...SECTIONS.map((s) => {
-    const icon = el("span", { class: "icon" });
-    icon.innerHTML = ICONS[s.id]; // static markup from icons.js, never user input
-    const a = el("a", { href: `#/${s.id}` }, icon, s.label);
-    if (s.id === current) a.setAttribute("aria-current", "page");
+  const item = (id, a) => {
+    if (id === current) a.setAttribute("aria-current", "page");
     return el("li", {}, a);
-  }));
+  };
+  menu.replaceChildren(
+    ...SECTIONS.map((s) => item(s.id, el("a", { href: `#/${s.id}` }, iconFor(s.id), s.label))),
+    item("favorites", el("a", { href: "#/favorites", class: "menu-favorites" }, iconFor("favorites"), "Favorites")),
+  );
 }
 
 // R9: show the open/closed state. The scrim only exists on narrow screens.
@@ -153,14 +172,33 @@ function renderList(section) {
   const count = el("p", { class: "count" });
   const list = el("ul", { class: "cards" });
 
+  // R19: one dropdown per field of this section, "Any" first, then the values with their counts.
+  const selects = FILTERS[section].map((f) => {
+    const select = el("select", { "data-field": f.field },
+      el("option", { value: "", text: "Any" }),
+      ...filterOptions(all, f, index).map((o) => el("option", { value: o.value, text: `${o.label} (${o.count})` })));
+    select.addEventListener("change", update);
+    return { field: f.field, select, label: el("label", {}, el("span", { text: f.label }), select) };
+  });
+  const clear = el("button", { type: "button", class: "clear-filters", text: "Clear filters" });
+  clear.addEventListener("click", () => {
+    for (const s of selects) s.select.value = "";
+    input.value = "";
+    update();
+  });
+  const filters = el("fieldset", { class: "filters" }, el("legend", { text: "Filter by" }),
+    ...selects.map((s) => s.label), clear);
+
   function update() {
-    const found = searchEntries(all, input.value);
-    count.textContent = countText(found.length, all.length, labelOf(section), input.value);
+    const chosen = Object.fromEntries(selects.map((s) => [s.field, s.select.value]));
+    const filtered = selects.some((s) => s.select.value);
+    const found = searchEntries(applyFilters(all, chosen, section, index), input.value);
+    count.textContent = countText(found.length, all.length, labelOf(section), input.value, filtered);
     list.replaceChildren(...cards(found).children);
   }
   input.addEventListener("input", update);
   update();
-  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, count, list);
+  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, count, list);
 }
 
 function renderDetail(entry) {
@@ -187,9 +225,43 @@ function renderDetail(entry) {
     banner(entry.section),
     el("a", { class: "back", href: `#/${entry.section}`, text: `← ${labelOf(entry.section)}` }),
     el("h1", { text: entry.name }),
+    favoriteButton(entry),
     el("h2", { text: "Facts" }), facts,
     ...related,
   );
+}
+
+// R18: "☆ Add to favorites" / "★ In favorites" under the entry's title.
+function favoriteButton(entry) {
+  const key = favoriteKey(entry.section, entry.id);
+  const button = el("button", { class: "fav", type: "button", text: favoriteButtonText(favorites.has(key)) });
+  const note = el("p", { class: "hint fav-note", text: NOT_SAVED });
+  note.hidden = favorites.persistent;
+  button.addEventListener("click", () => {
+    const on = favorites.toggle(key);
+    button.textContent = favoriteButtonText(on);
+    note.hidden = favorites.persistent;
+    announcer.textContent = on ? "Added to favorites" : "Removed from favorites";
+  });
+  return el("div", { class: "fav-bar" }, button, note);
+}
+
+// R16, R18: entries grouped by section, each group with its icon, label and count.
+function sectionGroups(groups) {
+  return groups.map((g) => el("section", { class: "result-group", "aria-label": g.label },
+    el("h2", {}, iconFor(g.section), g.label, el("span", { text: `(${g.entries.length})` })),
+    cards(g.entries)));
+}
+
+// R18: every favorite, grouped by section.
+function renderFavorites() {
+  const groups = favoriteGroups(index, favorites.list());
+  const body = groups.length
+    ? sectionGroups(groups)
+    : [el("p", { class: "empty", text: "No favorites yet." }),
+      el("p", { class: "hint", text: "Open any entry and press “☆ Add to favorites” to keep it here." })];
+  if (!favorites.persistent) body.push(el("p", { class: "hint fav-note", text: NOT_SAVED }));
+  main.replaceChildren(banner("films"), el("h1", { text: "Favorites" }), ...body);
 }
 
 function renderNotFound(section) {
@@ -215,14 +287,7 @@ function renderSearch(query) {
       el("p", { class: "hint", text: "Check the spelling, or try part of a name, such as “sky” for Skywalker." }));
   } else {
     summary = `${total} ${total === 1 ? "result" : "results"} for “${query.trim()}”`;
-    body.push(el("p", { class: "count", text: summary }));
-    for (const g of groups) {
-      const icon = el("span", { class: "icon" });
-      icon.innerHTML = ICONS[g.section]; // static markup from icons.js
-      body.push(el("section", { class: "result-group", "aria-label": g.label },
-        el("h2", {}, icon, g.label, el("span", { text: `(${g.entries.length})` })),
-        cards(g.entries)));
-    }
+    body.push(el("p", { class: "count", text: summary }), ...sectionGroups(groups));
   }
   announcer.textContent = summary;
   main.replaceChildren(banner("films"), el("h1", { text: "Search" }), ...body);
@@ -242,11 +307,13 @@ function onSearchInput() {
 
 function render() {
   const route = parseRoute(location.hash, index);
-  renderMenu(route.view === "search" ? null : route.section);
-  setBackdrop(route.view === "search" ? "films" : route.section);
+  const own = route.view === "search" || route.view === "favorites"; // views with no section
+  renderMenu(route.view === "favorites" ? "favorites" : own ? null : route.section);
+  setBackdrop(own ? "films" : route.section);
   if (route.view !== "search") globalSearch.value = "";
   else if (globalSearch.value !== route.query) globalSearch.value = route.query;
   if (route.view === "search") renderSearch(route.query);
+  else if (route.view === "favorites") renderFavorites();
   else if (route.view === "detail") renderDetail(route.entry);
   else if (route.view === "notfound") renderNotFound(route.section);
   else renderList(route.section);

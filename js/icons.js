@@ -49,4 +49,11 @@ export const ICONS = {
     '<path d="M5 11.5v9.5M8 11.5l-1 9.5M11 11.5v9.5M13.5 11.5l1 9.5"/>' +
     '<path d="M3.8 21h2.4M6 21h2.4M9.8 21h2.4M13.3 21h2.4"/>',
   ),
+  // R18: the Favorites menu item. A five-pointed star outline, with two small
+  // stars beside it.
+  favorites: svg(
+    '<path d="M11 3.5l2.3 4.7 5.2.8-3.8 3.6.9 5.2L11 15.4l-4.6 2.4.9-5.2-3.8-3.6 5.2-.8z"/>' +
+    '<circle cx="20.5" cy="18.5" r=".9" fill="currentColor" stroke="none"/>' +
+    '<circle cx="18" cy="21.5" r=".7" fill="currentColor" stroke="none"/>',
+  ),
 };
