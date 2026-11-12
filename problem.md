@@ -44,3 +44,12 @@ Films and series the dataset does not cover, images and official artwork, accoun
 - R4 (changed in round 3): The section search box also ignores accents and punctuation, using the same matching rules as R16, so "padme" finds "Padmé Amidala" in both places.
   - Before (round 1): "Typing in the search box filters the current section's cards by name, ignoring case."
   - Why it changed: two search boxes with different rules would be confusing; the owner agreed to one set of rules.
+
+## Round 4 requirements
+
+- R8 (changed in round 4): The page is usable at a width of 375 pixels with no horizontal scrolling, and this is checked by automated tests: no part of the layout is wider than 375 pixels, and long names and words wrap instead of overflowing.
+  - Before (round 1): "The page is usable at a width of 375 pixels with no horizontal scrolling."
+  - Why it changed: R8 was only checked by hand, so no test named it. Now it can be checked every time the tests run.
+- R17: The silhouette animations of R13 (the X-wing and R2-D2 and C-3PO) no longer play all the time. They play once, then wait about 5 minutes before playing again, so they do not distract while reading.
+- R18: The user can mark any entry (a film, character, planet, species, starship or vehicle) as a favorite with a visible button on its page, and unmark it the same way. A "Favorites" section in the menu lists every favorite, grouped by section. Favorites are kept in the browser, so they are still there after closing or reloading the page.
+- R19: Each section can be filtered by its own fields, not only by name, to make finding things easier. For example: characters by gender or species, planets by climate or terrain, starships and vehicles by class, films by release year. Filters can be combined with each other and with the name search, and can be cleared with one button.
