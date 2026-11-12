@@ -1,11 +1,12 @@
 // Rendering and routing only. All logic lives in logic.js and loader.js.
-import { SECTIONS } from "./sections.js";
+import { SECTIONS, FILTERS } from "./sections.js";
 import {
   buildIndex, searchEntries, searchAll, normalizeText, factsOf, relatedOf, parseRoute,
   nextMenuState, menuStartsOpen, nextFocusIndex,
   starField, introStartState, nextIntroState, introKeyEnds,
   titleFor, countText, paragraphsOf,
   favoriteKey, favoriteGroups, favoriteButtonText,
+  filterOptions, applyFilters,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { createFavoriteStore } from "./store.js";
@@ -171,14 +172,33 @@ function renderList(section) {
   const count = el("p", { class: "count" });
   const list = el("ul", { class: "cards" });
 
+  // R19: one dropdown per field of this section, "Any" first, then the values with their counts.
+  const selects = FILTERS[section].map((f) => {
+    const select = el("select", { "data-field": f.field },
+      el("option", { value: "", text: "Any" }),
+      ...filterOptions(all, f, index).map((o) => el("option", { value: o.value, text: `${o.label} (${o.count})` })));
+    select.addEventListener("change", update);
+    return { field: f.field, select, label: el("label", {}, el("span", { text: f.label }), select) };
+  });
+  const clear = el("button", { type: "button", class: "clear-filters", text: "Clear filters" });
+  clear.addEventListener("click", () => {
+    for (const s of selects) s.select.value = "";
+    input.value = "";
+    update();
+  });
+  const filters = el("fieldset", { class: "filters" }, el("legend", { text: "Filter by" }),
+    ...selects.map((s) => s.label), clear);
+
   function update() {
-    const found = searchEntries(all, input.value);
-    count.textContent = countText(found.length, all.length, labelOf(section), input.value);
+    const chosen = Object.fromEntries(selects.map((s) => [s.field, s.select.value]));
+    const filtered = selects.some((s) => s.select.value);
+    const found = searchEntries(applyFilters(all, chosen, section, index), input.value);
+    count.textContent = countText(found.length, all.length, labelOf(section), input.value, filtered);
     list.replaceChildren(...cards(found).children);
   }
   input.addEventListener("input", update);
   update();
-  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, count, list);
+  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, count, list);
 }
 
 function renderDetail(entry) {
