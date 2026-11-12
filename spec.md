@@ -267,7 +267,7 @@ The owner accepted every suggested default to the twelve questions asked at the 
 - **Combining:** an entry is shown when it has the chosen value for every field that is not "Any" (AND across fields), and its name matches the name box (R4). The count line says how many are shown. When nothing is left: "No planets match these filters." or, with text in the name box, "No planets match “text” with these filters."
 - **Clearing:** a "Clear filters" button sets every dropdown back to "Any" and empties the name box.
 - Switching section resets the filters, like the name box. They are not kept in the URL or between visits.
-- **Pure parts (`js/logic.js`):** `filterValues(entry, filter, index)` (the option values an entry has for a field), `filterOptions(entries, filter, index)` (`{ value, label, count }`, sorted), `applyFilters(entries, chosen, index)` (`chosen` maps a field to an option value; `""` or missing means "Any"). `countText` gains a fifth argument saying whether any filter is set.
+- **Pure parts (`js/logic.js`):** `filterValues(entry, filter, index)` (the option values an entry has for a field), `filterOptions(entries, filter, index)` (`{ value, label, count }`, sorted), `applyFilters(entries, chosen, section, index)` (`chosen` maps a field to an option value; `""` or missing means "Any"; `section` says which `FILTERS` apply). `countText` gains a fifth argument saying whether any filter is set.
 
 ### Testing round 4
 
