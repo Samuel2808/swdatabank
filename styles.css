@@ -152,6 +152,15 @@ h2 { font-size: 0.875rem; color: var(--muted); text-transform: uppercase; letter
 .empty { font-size: 1.125rem; margin: 8px 0 4px; }
 .hint { color: var(--muted); margin: 0 0 12px; }
 .back { display: inline-block; margin-top: 8px; font-size: 0.875rem; }
+/* R18: the favorites button under an entry's title, and the menu item set apart below the sections. */
+.fav-bar { margin-top: -6px; margin-bottom: 4px; }
+.fav {
+  max-width: 100%; padding: 6px 14px; cursor: pointer; font: inherit; font-size: 0.9375rem; color: var(--accent);
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
+}
+.fav:hover { border-color: var(--accent); }
+.fav-note { margin-top: 8px; font-size: 0.875rem; }
+#menu .menu-favorites { margin-top: 10px; border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; padding-top: 14px; }
 .status { color: var(--muted); padding: 20px; }
 .error { color: var(--red); border: 1px solid var(--red); border-radius: 8px; padding: 12px 14px; margin: 20px; }
 footer {
