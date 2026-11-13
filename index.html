@@ -8,7 +8,7 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body class="intro-active">
-  <!-- R15: the opening intro, shown on every load until it ends or is skipped. -->
+  <!-- R15: the opening intro, shown on the first visit (and by "Play intro") until it ends or is skipped. -->
   <div id="intro" class="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
     <svg id="intro-stars" class="stars" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
     <p id="intro-title" class="intro-title"></p>
@@ -53,7 +53,8 @@
     </footer>
   </div>
 
-  <!-- R13: decorative silhouettes drawn for this project, animated in styles.css. -->
+  <!-- R13: decorative silhouettes drawn for this project, animated in styles.css.
+       R21: the X-wing flies in its own strip under the top bar, which holds no text. -->
   <div class="sky" aria-hidden="true">
     <svg id="xwing" viewBox="0 0 140 40" aria-hidden="true">
       <rect class="laser" x="96" y="2.6" width="16" height="1.8" rx="0.9"/>

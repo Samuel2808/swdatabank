@@ -96,15 +96,24 @@ function decodeSafely(text) {
   try { return decodeURIComponent(text); } catch { return text; }
 }
 
+// R20: "planets?climate=arid" -> ["planets", "climate=arid"]; no "?" -> [path, ""].
+function splitQuery(path) {
+  const at = path.indexOf("?");
+  return at < 0 ? [path, ""] : [path.slice(0, at), path.slice(at + 1)];
+}
+
 // "#/people/1" -> detail; "#/people" -> list; anything unknown -> the films list.
 export function parseRoute(hash, index) {
   const path = String(hash ?? "").replace(/^#\/?/, "");
   // R16: "#/search/<text>" -> the search view; the text may itself contain "/".
   const search = path.match(/^search(?:\/(.*))?$/);
   if (search) return { view: "search", query: decodeSafely(search[1] ?? "") };
+  // R20: after a section or an entry, a "?…" part holds list filters; it does
+  // not change which view is shown.
+  const [page] = splitQuery(path);
   // R18: "#/favorites" -> the favorites view.
-  if (path === "favorites") return { view: "favorites" };
-  const [section, id] = path.split("/");
+  if (page === "favorites") return { view: "favorites" };
+  const [section, id] = page.split("/");
   if (!SECTION_IDS.includes(section)) return { view: "list", section: "films" };
   if (!id) return { view: "list", section };
   const entry = index.get(section, id);
@@ -163,6 +172,15 @@ export function nextIntroState(state, event) {
   if (event === "skip") return "done";
   if (event === "end" && state === "playing") return "done";
   return state;
+}
+
+// R15 (changed in round 5): the value stored once the intro has been seen.
+export const INTRO_SEEN = "1";
+
+// R15 (changed in round 5): whether the intro still has to play, given the value
+// stored for it (null when nothing is stored). Only the "seen" mark skips it.
+export function introShouldPlay(stored) {
+  return stored !== INTRO_SEEN;
 }
 
 // R15: the keys that end the intro.
@@ -299,4 +317,39 @@ export function filterOptions(entries, filter, index) {
 export function applyFilters(entries, chosen, section, index) {
   const active = (FILTERS[section] || []).filter((f) => chosen[f.field]);
   return entries.filter((e) => active.every((f) => filterValues(e, f, index).includes(chosen[f.field])));
+}
+
+// R20: the address of a section list with its filters and name box:
+// "#/planets?climate=arid&terrain=desert&q=tat". Fields in FILTERS order, then
+// the name box as "q"; "Any" ("") and a blank name box are left out, and fields
+// the section does not have are dropped. URLSearchParams does the encoding.
+export function listHash(section, chosen, query) {
+  const params = new URLSearchParams();
+  for (const f of FILTERS[section] || []) if (chosen?.[f.field]) params.append(f.field, chosen[f.field]);
+  const text = String(query ?? "");
+  if (text.trim()) params.append("q", text);
+  const rest = params.toString();
+  return `#/${section}${rest ? `?${rest}` : ""}`;
+}
+
+// R20: reads the filters and the name box back from a list address, as
+// { filters: { field: value }, query }. Only the section's own fields count, and
+// only values that are among their options (R19); anything else is ignored.
+export function parseListState(hash, section, index) {
+  const [, rest] = splitQuery(String(hash ?? "").replace(/^#\/?/, ""));
+  const params = new URLSearchParams(rest);
+  const entries = index.sections[section] || [];
+  const filters = {};
+  for (const f of FILTERS[section] || []) {
+    const value = params.get(f.field);
+    if (value && filterOptions(entries, f, index).some((o) => o.value === value)) filters[f.field] = value;
+  }
+  return { filters, query: params.get("q") ?? "" };
+}
+
+// R20: whether a change to a list's controls adds a history entry ("push") or
+// replaces the current one ("replace"). Typing on in the name box replaces, so
+// Back skips the letters; any other change (a dropdown, "Clear filters") pushes.
+export function historyMode(lastEdit, edit) {
+  return lastEdit === "name" && edit === "name" ? "replace" : "push";
 }
