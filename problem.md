@@ -54,6 +54,10 @@ Films and series the dataset does not cover, images and official artwork, accoun
 - R18: The user can mark any entry (a film, character, planet, species, starship or vehicle) as a favorite with a visible button on its page, and unmark it the same way. A "Favorites" section in the menu lists every favorite, grouped by section. Favorites are kept in the browser, so they are still there after closing or reloading the page.
 - R19: Each section can be filtered by its own fields, not only by name, to make finding things easier. For example: characters by gender or species, planets by climate or terrain, starships and vehicles by class, films by release year. Filters can be combined with each other and with the name search, and can be cleared with one button.
 
-## Round 5 requirements 
+## Round 5 requirements
 
-- R20
+- R15 (changed in round 5): The intro plays only on a visitor's first visit to the site. On later visits the main page opens directly, and a "Play intro" button lets the visitor watch the intro again.
+  - Before (round 3): "Every time the site is loaded, a full-screen intro plays before the main page."
+  - Why it changed: visitors should not have to sit through the same intro again and again every time they come back.
+- R20: The filters of each section (R19) are kept in the page address, so a filtered list can be shared as a link, and the browser's Back button returns to the previous filters.
+- R21: The X-wing silhouette flies only through an empty strip of the screen and never passes over text.
