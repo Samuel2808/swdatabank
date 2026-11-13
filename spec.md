@@ -304,6 +304,7 @@ The owner accepted every suggested default to the eleven questions asked at the 
 - **Updating in place:** when the address changes but the view is still the same section's list (Back, Forward, a dropdown, typing), the list is updated in place: the dropdowns and name box take the values from the address, the cards and count follow, and focus and scrolling stay where they are. Any other change renders the view afresh as before.
 - Following the section's menu link (`#/planets`) shows it unfiltered, as in round 4; Back returns to the filters. The "← Planets" link on a detail page opens the plain section; the browser's Back button returns to the filtered list.
 - **Pure parts (`js/logic.js`):** `listHash(section, chosen, query)` builds the address; `parseListState(hash, section, index)` reads `{ filters, query }` back, keeping only fields of that section and values that are among its options. `parseRoute` now ignores a `?…` part after a section or entry, so `#/planets?climate=arid` is the Planets list and `#/people/1?x` is character 1. The search route (`#/search/<text>`) keeps a `?` as part of the text.
+- Recorded in decision 0009.
 
 ### The X-wing's own strip (R21)
 
