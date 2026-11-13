@@ -9,7 +9,7 @@ import {
   filterOptions, applyFilters,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
-import { createFavoriteStore } from "./store.js";
+import { createFavoriteStore, createIntroMemory } from "./store.js";
 import { ICONS } from "./icons.js";
 import { PHOTOS } from "./photos.js";
 import { INTRO } from "./intro.js";
@@ -40,24 +40,44 @@ function browserStorage() {
 }
 const favorites = createFavoriteStore(browserStorage());
 const NOT_SAVED = "Favorites can't be saved in this browser and will be lost when you close the page.";
+// R15 (changed in round 5): the intro plays on the first visit only.
+const introMemory = createIntroMemory(browserStorage());
+let introReady = false;
 
 // R15: while the intro shows, everything behind it is inert (no clicks, no Tab).
 function setPageInert(inert) {
   for (const node of document.querySelectorAll("body > :not(#intro)")) node.inert = inert;
 }
 
-// R15: draw the stars, fill in the text, and start the intro.
-function startIntro() {
+// R15: draw the stars, fill in the text and listen for the intro's end (once).
+function prepareIntro() {
+  if (introReady) return;
+  introReady = true;
   document.getElementById("intro-stars").innerHTML = starField(260, 7)
     .map((s, i) => `<circle cx="${s.x}" cy="${s.y}" r="${s.r}" opacity="${s.o}"${i % 9 === 0 ? ' class="twinkle"' : ""}/>`)
     .join(""); // numbers only, from starField
   document.getElementById("intro-title").textContent = INTRO.title;
   introCrawl.replaceChildren(el("h2", { text: INTRO.heading }), ...INTRO.paragraphs.map((p) => el("p", { text: p })));
-  introState = introStartState(reducedMotion.matches);
-  setPageInert(true);
   introSkip.addEventListener("click", () => introEvent("skip"));
   introCrawl.addEventListener("animationend", (e) => { if (e.target === introCrawl) introEvent("end"); });
+}
+
+// R15: show the intro over the page, on a first visit or from "Play intro".
+// Showing the layer again restarts its CSS animations from the start.
+function playIntro() {
+  prepareIntro();
+  intro.hidden = false;
+  document.body.classList.add("intro-active");
+  introState = introStartState(reducedMotion.matches);
+  setPageInert(true);
   introSkip.focus();
+}
+
+// R15: the intro's layer goes away and the page behind it can be used.
+function hideIntro() {
+  intro.hidden = true;
+  document.body.classList.remove("intro-active");
+  setPageInert(false);
 }
 
 // R15: apply nextIntroState; when it says "done", show the page.
@@ -65,9 +85,8 @@ function introEvent(event) {
   if (introState === "done") return;
   introState = nextIntroState(introState, event);
   if (introState !== "done") return;
-  intro.hidden = true;
-  document.body.classList.remove("intro-active");
-  setPageInert(false);
+  introMemory.markSeen(); // R15 (changed): seen to the end, or skipped
+  hideIntro();
   focusHeading();
 }
 
@@ -96,8 +115,18 @@ function iconFor(id) {
   return icon;
 }
 
+// R15 (changed in round 5): "Play intro" closes the narrow menu and plays the intro.
+function playIntroButton() {
+  const button = el("button", { class: "play-intro", type: "button" }, iconFor("intro"), "Play intro");
+  button.addEventListener("click", () => {
+    menuAction("navigate");
+    playIntro();
+  });
+  return el("li", {}, button);
+}
+
 // R9, R10: the sidebar menu, one link with an icon per section,
-// then Favorites (R18).
+// then Favorites (R18) and Play intro (R15).
 function renderMenu(current) {
   const item = (id, a) => {
     if (id === current) a.setAttribute("aria-current", "page");
@@ -106,6 +135,7 @@ function renderMenu(current) {
   menu.replaceChildren(
     ...SECTIONS.map((s) => item(s.id, el("a", { href: `#/${s.id}` }, iconFor(s.id), s.label))),
     item("favorites", el("a", { href: "#/favorites", class: "menu-favorites" }, iconFor("favorites"), "Favorites")),
+    playIntroButton(),
   );
 }
 
@@ -325,7 +355,8 @@ function render() {
 }
 
 async function start() {
-  startIntro();
+  if (introMemory.shouldPlay()) playIntro();
+  else hideIntro();
   setBackdrop("films");
   applyMenu();
   document.querySelector(".skip-link").addEventListener("click", focusHeading);
