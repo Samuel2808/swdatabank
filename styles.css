@@ -12,6 +12,7 @@
   --sidebar: 15rem;               /* grows with the text (U11) */
   --topbar: 3.5rem;
   --ground: 64px;                 /* U2: the strip the droids walk on */
+  --sky: 40px;                    /* R21: the strip the X-wing flies in */
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
@@ -48,7 +49,7 @@ a { color: var(--accent); }
 /* R9 (changed in round 3): full-height menu bar on the left, below the top bar.
    At every width it is hidden until opened; the button opens and closes it. */
 #sidebar {
-  position: fixed; top: var(--topbar); bottom: 0; left: 0; z-index: 3;
+  position: fixed; top: calc(var(--topbar) + var(--sky)); bottom: 0; left: 0; z-index: 3;
   width: var(--sidebar); overflow-y: auto;
   background: var(--bg); border-right: 1px solid var(--line);
   padding: 20px 12px;
@@ -92,7 +93,7 @@ body.menu-open #sidebar { transform: none; visibility: visible; transition: tran
 .scrim[hidden] { display: none; }
 
 .page {
-  margin-left: 0; min-height: calc(100vh - var(--topbar)); display: flex; flex-direction: column;
+  margin-left: 0; margin-top: var(--sky); min-height: calc(100vh - var(--topbar) - var(--sky)); display: flex; flex-direction: column;
   padding-bottom: var(--ground);
   transition: margin-left 0.25s ease;
 }
@@ -195,12 +196,17 @@ footer {
   padding: 16px; background: var(--panel); border-top: 1px solid var(--line);
 }
 
-/* R13: silhouettes. A fixed, clipped layer that never takes clicks or widens the page. */
-.sky { position: fixed; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; }
+/* R13: silhouettes. Fixed, clipped layers that never take clicks or widen the page.
+   R21: the X-wing flies in its own opaque strip under the top bar, never over text. */
+.sky {
+  position: fixed; top: var(--topbar); left: 0; right: 0; z-index: 4; height: var(--sky);
+  overflow: hidden; pointer-events: none;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
 .sky svg { fill: var(--text); }
 .sky .detail { fill: var(--bg); }
 #xwing {
-  position: absolute; top: 16vh; left: 0; width: 150px; opacity: 0.9;
+  position: absolute; top: 4px; left: 0; width: 112px; opacity: 0.9;
   transform: translateX(-180px);
   animation: fly 330s linear 1s infinite;   /* R17: plays once, then rests about 5 minutes */
 }
@@ -325,6 +331,7 @@ body.intro-active .ground { display: none; }
 
 /* R13: no motion for visitors who ask for less. */
 @media (prefers-reduced-motion: reduce) {
+  :root { --sky: 0px; }
   .sky { display: none; }
   #sidebar { transition: none; }
   .page { transition: none; padding-bottom: 0; }
@@ -350,7 +357,8 @@ body.intro-active .ground { display: none; }
 
 /* R9 + R8: on narrow screens the open sidebar lies over the content, with a scrim. */
 @media (max-width: 767px) {
-  :root { --ground: 48px; }
+  :root { --ground: 48px; --sky: 32px; }
+  #xwing { width: 84px; }
   #r2d2 { width: 25px; }
   #c3po { width: 18px; }
   #sidebar { width: min(80vw, var(--sidebar)); }
