@@ -56,4 +56,12 @@ export const ICONS = {
     '<circle cx="20.5" cy="18.5" r=".9" fill="currentColor" stroke="none"/>' +
     '<circle cx="18" cy="21.5" r=".7" fill="currentColor" stroke="none"/>',
   ),
+  // R15 (round 5): the "Play intro" menu button. A play triangle in a circle,
+  // with a few stars around it.
+  intro: svg(
+    '<circle cx="11" cy="13" r="8"/>' +
+    '<path d="M9 9.5v7l5.5-3.5z" fill="currentColor"/>' +
+    '<circle cx="20.5" cy="3.5" r=".9" fill="currentColor" stroke="none"/>' +
+    '<circle cx="22" cy="7.5" r=".6" fill="currentColor" stroke="none"/>',
+  ),
 };
