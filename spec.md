@@ -116,6 +116,8 @@ The page state lives in the URL hash, so links and the browser's back button wor
 - Silhouettes are inline SVG in `index.html`, drawn for this project, in solid black or white. They are decoration only (`aria-hidden="true"`) and never catch clicks (`pointer-events: none`).
 > **Changed in round 4.** The timings below (a 14 s and a 30 s loop) are replaced by one 330 s cycle; see "Animations play, then rest (R17)" in the round 4 section.
 
+> **Changed in round 5.** The X-wing no longer flies over the page; it flies in its own strip under the top bar. See "The X-wing's own strip (R21)" in the round 5 section.
+
 - **X-wing:** flies left to right across the upper part of the screen in about 4 s, then waits; the cycle repeats every 14 s. While it crosses it fires two short red laser bolts forward.
 - **R2-D2 and C-3PO:** walk together along the bottom of the screen from right to left, taking about 30 s to cross, on a loop. R2-D2 rocks side to side; C-3PO's legs swing.
 - Visitors whose system asks for reduced motion (`prefers-reduced-motion: reduce`) see no animation: the silhouettes are hidden.
@@ -152,6 +154,7 @@ The page state lives in the URL hash, so links and the browser's back button wor
 - The state is a pure function `nextIntroState(state, event)` in `js/logic.js`. States: `playing`, `still` (reduced motion) and `done`. Events: `skip` (button, Enter, Escape) ends both `playing` and `still`; `end` (the crawl finished) ends `playing` only. `introKeyEnds(key)` says whether a key ends the intro (Enter and Escape). `app.js` only applies the result.
 - **Reduced motion (R15.5):** with `prefers-reduced-motion: reduce` there is no movement: no twinkling, the title sits still above the text, and the text is shown flat (no perspective), on screen, scrollable if the screen is short. Because nothing moves, the intro does not end by itself (state `still`): the visitor reads it and presses Skip, Enter or Escape.
 - The intro plays on every page load, including a reload and a direct link such as `#/people/1`; when it ends, the page the link names is showing. It is not remembered between visits. It plays no sound.
+  > **Changed in round 5.** The intro now plays only on the first visit; see "Intro on the first visit only (R15, changed)" in the round 5 section.
 - It works the same at 375 px: the title and text use sizes in `vw` with limits (`clamp`) so they never overflow (R8). Below 481 px the text is left-aligned at 18 px (justified text left wide gaps on a phone) and the "Enter / Esc" hint is hidden.
 
 ### Site-wide search (R16)
@@ -267,6 +270,7 @@ The owner accepted every suggested default to the twelve questions asked at the 
 - **Combining:** an entry is shown when it has the chosen value for every field that is not "Any" (AND across fields), and its name matches the name box (R4). The count line says how many are shown. When nothing is left: "No planets match these filters." or, with text in the name box, "No planets match “text” with these filters."
 - **Clearing:** a "Clear filters" button sets every dropdown back to "Any" and empties the name box.
 - Switching section resets the filters, like the name box. They are not kept in the URL or between visits.
+  > **Changed in round 5.** The filters and the name box are now kept in the address; see "Filters in the address (R20)" in the round 5 section. Switching section still resets them.
 - **Pure parts (`js/logic.js`):** `filterValues(entry, filter, index)` (the option values an entry has for a field), `filterOptions(entries, filter, index)` (`{ value, label, count }`, sorted), `applyFilters(entries, chosen, section, index)` (`chosen` maps a field to an option value; `""` or missing means "Any"; `section` says which `FILTERS` apply). `countText` gains a fifth argument saying whether any filter is set.
 
 ### Testing round 4
@@ -276,6 +280,46 @@ The owner accepted every suggested default to the twelve questions asked at the 
 - R18: `favoriteKey`, `parseFavorites`, `toggleFavorite`, `favoriteGroups`, `favoriteButtonText`, `parseRoute` and `titleFor` for favorites; `createFavoriteStore` with a fake storage (keeps favorites across a new store on the same storage, i.e. a reload; survives a throwing storage, with `persistent` false); a Favorites icon; the app wires the button, the menu item and the view.
 - R19: `FILTERS` names only fields that exist in the data; `filterValues`, `filterOptions` and `applyFilters` with a fixture and with the real data (climate lists, merged case, "Not listed" species, release years, "Inc." manufacturers); filters combine with the name search; `countText` with filters; the app has the dropdowns and the clear button.
 - How favorites and filters look, and that the animations rest, are also checked by hand in the browser at 375 × 812 and at desktop width.
+
+## Round 5: intro on the first visit, filters in the address, the X-wing's own strip (R15, R20, R21)
+
+The owner accepted every suggested default to the eleven questions asked at the start of round 5. They are written into the sections below.
+
+### Intro on the first visit only (R15, changed)
+
+- **Before (round 3):** the intro played on every page load.
+- **Now:** it plays on a visitor's first visit only. Once it has ended in any way (Skip, Enter, Escape, or the text has scrolled away), the browser remembers it in `localStorage` under `swdatabank.introSeen` (the value `"1"`). On later visits the page opens directly: the intro layer is hidden and the silhouettes start their cycle at once.
+- A visitor who closes the tab while the intro is still playing has not seen it to the end, so it plays again next time.
+- If storage cannot be used (reading or writing throws), every visit counts as a first visit and the intro plays, as in round 3.
+- A link to any page (for example `#/people/1` or a filtered list, R20) plays the intro on a first visit too; when it ends, that page is showing.
+- **"Play intro":** a button at the bottom of the sidebar menu, after Favorites and set apart from it by a line, with its own icon drawn for this project (a play triangle in a circle). It is there on every visit, including the first. Pressing it closes the narrow-screen menu and plays the same full intro, with the same reduced-motion version, Skip button and keys. When it ends, the page that was showing is showing again and focus returns to its heading. A replay does not change what is remembered.
+- The intro layer stays in `index.html` with `body.intro-active`, as in round 3, so a first visit never flashes the main page. On later visits `app.js` hides it as soon as it runs; the page behind is near-black too, so at most a black frame shows.
+- **Pure parts:** `introShouldPlay(stored)` in `js/logic.js` says whether the stored value means the intro still has to play (anything but `"1"`, including `null`). `createIntroMemory(storage)` in `js/store.js` takes a storage object like `createFavoriteStore`: `shouldPlay()` (true when reading throws) and `markSeen()` (never throws). The key is `INTRO_SEEN_KEY`.
+
+### Filters in the address (R20)
+
+- **Address:** a section list keeps its filters and its name box after a `?`, inside the hash: `#/planets?climate=arid&terrain=desert&q=tat`. Each filter is its `FILTERS` field name and the option value (lower case, as in R19); the name box is `q`. Fields are written in `FILTERS` order, then `q`; "Any" and an empty name box are left out, so an unfiltered list is just `#/planets`. Values are encoded with `URLSearchParams`, so spaces, commas, `/` and `&` survive ("Gallofree Yards, Inc.").
+- **Opening a link** to such an address shows the section with those dropdowns set and that text in the name box. A field the section does not have, or a value that is not one of its options, is ignored (that dropdown shows "Any"); the address is left as it is.
+- **History and Back:** every dropdown change and every press of "Clear filters" adds one history entry, so Back returns to the filters before it. In the name box the first keystroke adds one entry and later keystrokes replace it, as in the site-wide search (R16), so Back does not step through every letter. Changing a dropdown after typing adds a new entry again. The rule is the pure function `historyMode(lastEdit, edit)`: `"replace"` when both are `"name"`, otherwise `"push"`.
+- **Updating in place:** when the address changes but the view is still the same section's list (Back, Forward, a dropdown, typing), the list is updated in place: the dropdowns and name box take the values from the address, the cards and count follow, and focus and scrolling stay where they are. Any other change renders the view afresh as before.
+- Following the section's menu link (`#/planets`) shows it unfiltered, as in round 4; Back returns to the filters. The "← Planets" link on a detail page opens the plain section; the browser's Back button returns to the filtered list.
+- **Pure parts (`js/logic.js`):** `listHash(section, chosen, query)` builds the address; `parseListState(hash, section, index)` reads `{ filters, query }` back, keeping only fields of that section and values that are among its options. `parseRoute` now ignores a `?…` part after a section or entry, so `#/planets?climate=arid` is the Planets list and `#/people/1?x` is character 1. The search route (`#/search/<text>`) keeps a `?` as part of the text.
+
+### The X-wing's own strip (R21)
+
+- **Before (round 2):** the X-wing flew across the whole page, 16 % from the top, so it passed over whatever text was there.
+- **Now:** the X-wing flies in a "sky" strip of its own: fixed right under the top bar, across the full width, 40 px tall (32 px below 768 px), black with a grey line at the bottom, like the droids' ground strip (U2). Nothing else is in it.
+- The X-wing is drawn to fit: 112 px wide and 32 px tall (84 × 24 px below 768 px), 4 px from the top of the strip. The laser bolts are part of the X-wing's drawing, so they stay in the strip too. The R17 timing is unchanged.
+- The page (`.page`) starts below the strip (`margin-top: var(--sky)`), and the sidebar starts below it too. Text that scrolls up passes behind the opaque strip and the sticky top bar, never under the X-wing.
+- With reduced motion the strip is not shown, and its height (`--sky`) is 0, so no empty band is left. During the intro the strip is hidden like the other silhouettes.
+- Recorded in decision 0008.
+
+### Testing round 5
+
+- R15 (changed): `introShouldPlay`; `createIntroMemory` with a fake storage (a new visit after `markSeen` does not play; a throwing storage plays and does not throw; the key starts with `swdatabank.`); the app plays the intro only when `shouldPlay()` says so, marks it seen when it ends, and has a "Play intro" button in the menu; the round 3 intro tests still hold.
+- R20: `listHash` (order, left-out "Any", encoding); `parseListState` (round trip with the real data, unknown fields and values ignored); `parseRoute` ignores the `?…` part; `historyMode`; the app writes the address on every change and updates the list in place on `hashchange`.
+- R21: `styles.css` makes `.sky` an opaque fixed strip under the top bar of height `--sky`, the X-wing fits inside it at both widths, the page and the sidebar start below it, and reduced motion sets `--sky` to 0; the strip in `index.html` holds only the X-wing.
+- The first and later visits, "Play intro", Back through filters and the strip are also checked by hand in the browser at 375 × 812 and at desktop width.
 
 ## Code layout
 
@@ -289,7 +333,7 @@ js/intro.js         the intro's title and opening text (R15)
 img/photos/*.jpg    the bundled photos
 CREDITS.md          source page, author and licence of each photo
 js/logic.js         pure functions: parse references, build the index, search (R4, R16), facts and related lists, routes, menu, focus and intro state, star field
-js/store.js         keeps the favorites (R18) in a storage object passed in (localStorage in the browser, a fake in tests)
+js/store.js         keeps the favorites (R18) and whether the intro was seen (R15) in a storage object passed in (localStorage in the browser, a fake in tests)
 js/loader.js        loads the six JSON files; takes a fetch function so tests can pass a fake one
 js/app.js           DOM rendering and hash routing (not unit tested)
 scripts/fetch-data.mjs  refreshes data/ from SWAPI (developer only)
