@@ -165,6 +165,15 @@ export function nextIntroState(state, event) {
   return state;
 }
 
+// R15 (changed in round 5): the value stored once the intro has been seen.
+export const INTRO_SEEN = "1";
+
+// R15 (changed in round 5): whether the intro still has to play, given the value
+// stored for it (null when nothing is stored). Only the "seen" mark skips it.
+export function introShouldPlay(stored) {
+  return stored !== INTRO_SEEN;
+}
+
 // R15: the keys that end the intro.
 export function introKeyEnds(key) {
   return key === "Enter" || key === "Escape";
