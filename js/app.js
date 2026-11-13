@@ -6,7 +6,7 @@ import {
   starField, introStartState, nextIntroState, introKeyEnds,
   titleFor, countText, paragraphsOf,
   favoriteKey, favoriteGroups, favoriteButtonText,
-  filterOptions, applyFilters,
+  filterOptions, applyFilters, listHash, parseListState, historyMode,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { createFavoriteStore, createIntroMemory } from "./store.js";
@@ -31,6 +31,10 @@ let introState = "done";
 // R9: 768 px and wider counts as a wide screen.
 const wideScreen = window.matchMedia("(min-width: 768px)");
 let index = null;
+// R20: the section list on screen, so an address change within it updates it in place.
+let listView = null;
+// R20: the address this page just wrote itself, so its own hashchange is not taken for Back.
+let ownHash = null;
 let menuOpen = menuStartsOpen(wideScreen.matches);
 
 // R18: favorites live in localStorage. Even reading window.localStorage can throw
@@ -194,6 +198,7 @@ function cards(entries) {
 
 function renderList(section) {
   const all = index.sections[section];
+  let lastEdit = null; // R20: the last change made in this list ("name", "filter", "clear")
   const input = el("input", {
     class: "search", type: "search",
     placeholder: `Filter ${labelOf(section).toLowerCase()} by name…`,
@@ -207,14 +212,14 @@ function renderList(section) {
     const select = el("select", { "data-field": f.field },
       el("option", { value: "", text: "Any" }),
       ...filterOptions(all, f, index).map((o) => el("option", { value: o.value, text: `${o.label} (${o.count})` })));
-    select.addEventListener("change", update);
+    select.addEventListener("change", () => commit("filter"));
     return { field: f.field, select, label: el("label", {}, el("span", { text: f.label }), select) };
   });
   const clear = el("button", { type: "button", class: "clear-filters", text: "Clear filters" });
   clear.addEventListener("click", () => {
     for (const s of selects) s.select.value = "";
     input.value = "";
-    update();
+    commit("clear");
   });
   const filters = el("fieldset", { class: "filters" }, el("legend", { text: "Filter by" }),
     ...selects.map((s) => s.label), clear);
@@ -226,9 +231,34 @@ function renderList(section) {
     count.textContent = countText(found.length, all.length, labelOf(section), input.value, filtered);
     list.replaceChildren(...cards(found).children);
   }
-  input.addEventListener("input", update);
-  update();
+  // R20: write the controls into the address. Typing on in the name box replaces
+  // the current history entry; any other change adds one, so Back returns to it.
+  function commit(edit) {
+    const hash = listHash(section, Object.fromEntries(selects.map((s) => [s.field, s.select.value])), input.value);
+    const mode = historyMode(lastEdit, edit);
+    lastEdit = edit;
+    update();
+    if (hash === location.hash) return;
+    if (mode === "replace") {
+      history.replaceState(null, "", hash);
+    } else {
+      ownHash = hash;
+      location.hash = hash;
+    }
+  }
+
+  // R20: set the controls from the address (a link, Back or Forward).
+  function apply(state, fromOutside) {
+    for (const s of selects) s.select.value = state.filters[s.field] ?? "";
+    if (input.value !== state.query) input.value = state.query;
+    if (fromOutside) lastEdit = null;
+    update();
+  }
+
+  input.addEventListener("input", () => commit("name"));
+  apply(parseListState(location.hash, section, index), true);
   main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, count, list);
+  listView = { section, apply };
 }
 
 function renderDetail(entry) {
@@ -337,6 +367,14 @@ function onSearchInput() {
 
 function render() {
   const route = parseRoute(location.hash, index);
+  const fromOutside = location.hash !== ownHash;
+  ownHash = null;
+  // R20: still the same section's list: update it in place, so focus and scrolling stay.
+  if (route.view === "list" && listView?.section === route.section) {
+    listView.apply(parseListState(location.hash, route.section, index), fromOutside);
+    return;
+  }
+  listView = null;
   const own = route.view === "search" || route.view === "favorites"; // views with no section
   renderMenu(route.view === "favorites" ? "favorites" : own ? null : route.section);
   setBackdrop(own ? "films" : route.section);
