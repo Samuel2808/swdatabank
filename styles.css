@@ -329,13 +329,16 @@ body.intro-active .ground { display: none; }
   to { opacity: 0.25; }
 }
 
-/* R13: no motion for visitors who ask for less. */
+/* R13: no motion for visitors who ask for less. Since round 6 the silhouettes
+   stand still in their strips instead of being hidden. */
 @media (prefers-reduced-motion: reduce) {
-  :root { --sky: 0px; }
-  .sky { display: none; }
+  #xwing { left: 50%; transform: translateX(-50%); animation: none; }
+  .laser { display: none; }
+  .droids { left: auto; right: 16px; transform: none; animation: none; }
+  #r2d2 { animation: none; }
+  .leg { animation: none; }
   #sidebar { transition: none; }
-  .page { transition: none; padding-bottom: 0; }
-  .ground { display: none; }
+  .page { transition: none; }
   .stars .twinkle { animation: none; }
   .intro { overflow-y: auto; }
   .stars { position: fixed; }
