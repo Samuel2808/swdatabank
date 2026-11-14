@@ -33,10 +33,12 @@ test("R13: the page leaves room for the ground strip so text scrolls above it", 
   assert.match(css, /\n\.page \{[^}]*padding-bottom: var\(--ground\)/);
 });
 
-test("R13: the ground strip goes away with reduced motion and during the intro", () => {
+// Changed in round 6: with reduced motion the droids stand still on their
+// strip (R13, changed), so the strip and the room for it stay.
+test("R13: the ground strip goes away during the intro, and stays with reduced motion", () => {
   const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/);
-  assert.match(block[1], /\.ground \{[^}]*display: none/);
-  assert.match(block[1], /\.page \{[^}]*padding-bottom: 0/);
+  assert.doesNotMatch(block[1], /\.ground \{[^}]*display: none/);
+  assert.doesNotMatch(block[1], /\.page \{[^}]*padding-bottom: 0/);
   assert.match(css, /body\.intro-active \.ground \{[^}]*display: none/);
 });
 

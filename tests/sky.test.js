@@ -75,8 +75,11 @@ test("R21: the page and the sidebar start below the strip", () => {
   assert.match(rule("#sidebar"), /top: calc\(var\(--topbar\) \+ var\(--sky\)\)/);
 });
 
-test("R21: with reduced motion the strip is hidden and leaves no empty band", () => {
+// Changed in round 6: R13 now shows the X-wing standing still with reduced
+// motion, so the strip stays and the page still starts below it.
+test("R21: with reduced motion the strip stays, and the page still starts below it", () => {
   const reduced = block("\\(prefers-reduced-motion: reduce\\)");
-  assert.match(reduced, /\.sky \{[^}]*display: none/);
-  assert.match(reduced, /:root \{[^}]*--sky: 0(px)?;/);
+  assert.doesNotMatch(reduced, /\.sky \{[^}]*display: none/);
+  assert.doesNotMatch(reduced, /--sky: 0/);
+  assert.doesNotMatch(reduced, /\.page \{[^}]*margin-top/);
 });
