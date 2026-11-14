@@ -7,7 +7,7 @@ import {
   titleFor, countText, paragraphsOf,
   favoriteKey, favoriteGroups, favoriteButtonText,
   filterOptions, applyFilters, listHash, parseListState, historyMode,
-  rememberList, backHref,
+  rememberList, backHref, filterNotes,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { createFavoriteStore, createIntroMemory } from "./store.js";
@@ -227,6 +227,8 @@ function renderList(section) {
   });
   const filters = el("fieldset", { class: "filters" }, el("legend", { text: "Filter by" }),
     ...selects.map((s) => s.label), clear);
+  // R23: why some entries have an option such as "Unknown species".
+  const notes = filterNotes(all, section, index).map((text) => el("p", { class: "hint filter-note", text }));
 
   function update() {
     const chosen = Object.fromEntries(selects.map((s) => [s.field, s.select.value]));
@@ -262,7 +264,7 @@ function renderList(section) {
 
   input.addEventListener("input", () => commit("name"));
   apply(parseListState(location.hash, section, index), true);
-  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, count, list);
+  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, ...notes, count, list);
   listView = { section, apply };
 }
 
