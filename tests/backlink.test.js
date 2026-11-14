@@ -37,11 +37,15 @@ test("R22: the last list shown wins, even when it has no filters", () => {
   assert.equal(backHref(memory, "planets"), "#/planets");
 });
 
-test("R22: detail, search, favorites and unknown addresses leave the memory as it is", () => {
+test("R22: detail, not-found, search and favorites addresses leave the memory as it is", () => {
   const memory = rememberList({}, "#/planets?climate=arid", index);
-  for (const hash of ["#/planets/1", "#/people/1?climate=arid", "#/search/luke", "#/favorites", "#/nowhere"]) {
+  for (const hash of ["#/planets/1", "#/people/1?climate=arid", "#/planets/9999", "#/search/luke", "#/favorites"]) {
     assert.deepEqual(rememberList(memory, hash, index), memory, hash);
   }
+});
+
+test("R22: an unknown address shows the Films list, so it is remembered as Films", () => {
+  assert.equal(backHref(rememberList({}, "#/nowhere", index), "films"), "#/films");
 });
 
 test("R22: fields and values the section does not have are not remembered", () => {
