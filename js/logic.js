@@ -353,3 +353,20 @@ export function parseListState(hash, section, index) {
 export function historyMode(lastEdit, edit) {
   return lastEdit === "name" && edit === "name" ? "replace" : "push";
 }
+
+// R22: remembers the address of each section's list as it was last shown, so
+// the "← Section" link of a detail page can return to it with its filters.
+// `memory` maps a section to a list address; a new object is returned. Only a
+// list address counts, rebuilt from what parseListState accepts.
+export function rememberList(memory, hash, index) {
+  const route = parseRoute(hash, index);
+  if (route.view !== "list") return memory;
+  const state = parseListState(hash, route.section, index);
+  return { ...memory, [route.section]: listHash(route.section, state.filters, state.query) };
+}
+
+// R22: where the "← Section" link of a detail page goes: the section's last list,
+// or the plain section when none was shown.
+export function backHref(memory, section) {
+  return memory?.[section] ?? `#/${section}`;
+}
