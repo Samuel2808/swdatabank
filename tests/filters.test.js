@@ -70,10 +70,10 @@ test("R19: values are trimmed and compared ignoring upper/lower case", () => {
   assert.deepEqual(filterValues(people[2], filterFor("people", "gender"), fixture), ["male"]);
 });
 
-test("R19: a reference field gives the names it points to, or 'Not listed'", () => {
+test("R19: a reference field gives the names it points to, or its missing option ('Unknown species' since R23)", () => {
   const species = filterFor("people", "species");
   assert.deepEqual(filterValues(people[2], species, fixture), ["yoda's species"]);
-  assert.deepEqual(filterValues(people[0], species, fixture), ["not listed"]);
+  assert.deepEqual(filterValues(people[0], species, fixture), ["unknown species"]);
   assert.deepEqual(filterValues(people[0], filterFor("people", "homeworld"), fixture), ["tatooine"]);
 });
 
@@ -108,9 +108,9 @@ test("R19: an option shows the spelling found first and merges other cases", () 
   ]);
 });
 
-test("R19: 'Not listed' comes last", () => {
+test("R19: the missing option ('Unknown species' since R23) comes last", () => {
   const species = filterOptions(people, filterFor("people", "species"), fixture);
-  assert.deepEqual(species.map((o) => o.label), ["Yoda's species", "Not listed"]);
+  assert.deepEqual(species.map((o) => o.label), ["Yoda's species", "Unknown species"]);
   assert.equal(species.at(-1).count, 2);
 });
 
@@ -122,7 +122,7 @@ test("R19: with the real data, release years are in order and classes are merged
   assert.equal(values.length, new Set(values).size);
   assert.equal(values.filter((v) => v === "starfighter").length, 1);
   const species = filterOptions(real.sections.people, filterFor("people", "species"), real);
-  assert.equal(species.at(-1).label, "Not listed");
+  assert.equal(species.at(-1).label, "Unknown species");
   assert.equal(species.at(-1).count, 32);
 });
 
