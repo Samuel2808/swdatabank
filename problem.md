@@ -61,3 +61,10 @@ Films and series the dataset does not cover, images and official artwork, accoun
   - Why it changed: visitors should not have to sit through the same intro again and again every time they come back.
 - R20: The filters of each section (R19) are kept in the page address, so a filtered list can be shared as a link, and the browser's Back button returns to the previous filters.
 - R21: The X-wing silhouette flies only through an empty strip of the screen and never passes over text.
+
+## Round 6 requirements
+
+- R22: Going back from a detail page to its section list (the "← Section" link) keeps the filters and name search the visitor had before opening the entry.
+- R13 (changed in round 6): When the visitor's system asks for reduced motion, the silhouettes (the X-wing and R2-D2 and C-3PO) are shown standing still instead of being hidden.
+  - Why it changed: visitors who ask for less motion should still see the site's look, just without movement.
+- R23: Filter options are clean: spelling variants in the data (such as "Galatic Basic") are shown as one option, and characters with no species in the data are listed as "Unknown species", with a short note explaining why.
