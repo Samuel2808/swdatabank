@@ -38,8 +38,8 @@ test("R20: spaces, commas, slashes and '&' are encoded", () => {
 // ---- reading it back
 
 test("R20: a filtered address is read back as the same filters and name text", () => {
-  const state = parseListState("#/planets?climate=arid&terrain=desert&q=tat", "planets", index);
-  assert.deepEqual(state, { filters: { climate: "arid", terrain: "desert" }, query: "tat" });
+  const state = parseListState("#/planets?climate=arid&terrain=deserts&q=tat", "planets", index);
+  assert.deepEqual(state, { filters: { climate: "arid", terrain: "deserts" }, query: "tat" });
 });
 
 test("R20: an address with no '?' has no filters and no name text", () => {
@@ -59,8 +59,8 @@ test("R20: every option of every filter survives a trip through the address", ()
 });
 
 test("R20: unknown fields and values that are not options are ignored", () => {
-  const state = parseListState("#/planets?climate=lava&gender=male&terrain=desert&zzz=1", "planets", index);
-  assert.deepEqual(state, { filters: { terrain: "desert" }, query: "" });
+  const state = parseListState("#/planets?climate=lava&gender=male&terrain=deserts&zzz=1", "planets", index);
+  assert.deepEqual(state, { filters: { terrain: "deserts" }, query: "" });
 });
 
 test("R20: a broken address does not throw", () => {

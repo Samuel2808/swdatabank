@@ -271,7 +271,7 @@ function filterLabels(entry, filter, index) {
       const ref = parseRef(url);
       return ref && index.get(ref.section, ref.id)?.name;
     }).filter(Boolean);
-    return names.length ? names : [NOT_LISTED];
+    return names.length ? names : [filter.missing?.label ?? NOT_LISTED];
   }
   const text = String(value ?? "").trim();
   if (filter.kind === "year") return [text.slice(0, 4)];
@@ -286,27 +286,57 @@ function filterLabels(entry, filter, index) {
   return parts;
 }
 
+// R23: the spellings of each `same` group, in lower case, mapped to the group's
+// first spelling (as written), worked out once per filter.
+const spellings = new WeakMap();
+function spellingsOf(filter) {
+  if (!spellings.has(filter)) {
+    const map = new Map();
+    for (const [first, ...others] of filter.same || []) {
+      for (const s of [first, ...others]) map.set(s.toLowerCase(), first);
+    }
+    spellings.set(filter, map);
+  }
+  return spellings.get(filter);
+}
+
+// R23: the option value for any spelling of a value (as written in the data, or
+// in a link made before round 6): the lower-case first spelling of its `same`
+// group, "unknown species" for the old "not listed" of a renamed missing
+// option, otherwise the value itself in lower case.
+export function canonicalValue(filter, value) {
+  const text = String(value ?? "").trim().toLowerCase();
+  const first = spellingsOf(filter).get(text);
+  if (first) return first.toLowerCase();
+  if (filter.missing && text === NOT_LISTED.toLowerCase()) return filter.missing.label.toLowerCase();
+  return text;
+}
+
 // R19: the option values (lower case, no duplicates) an entry has for a filter.
+// R23: spellings of one value give one option value.
 export function filterValues(entry, filter, index) {
-  return [...new Set(filterLabels(entry, filter, index).map((v) => v.toLowerCase()))];
+  return [...new Set(filterLabels(entry, filter, index).map((v) => canonicalValue(filter, v)))];
 }
 
 // R19: the options of one filter's dropdown: { value, label, count }, sorted by
 // label (numbers in order, "Not listed" last). The label is the spelling found
 // first; the count is how many entries have the value.
+// R23: a `same` group is one option labelled with its first spelling, and the
+// missing option ("Unknown species") is last.
 export function filterOptions(entries, filter, index) {
   const options = new Map();
+  const groups = spellingsOf(filter);
   for (const entry of entries) {
     const seen = new Set();
     for (const label of filterLabels(entry, filter, index)) {
-      const value = label.toLowerCase();
+      const value = canonicalValue(filter, label);
       if (seen.has(value)) continue;
       seen.add(value);
-      if (!options.has(value)) options.set(value, { value, label, count: 0 });
+      if (!options.has(value)) options.set(value, { value, label: groups.get(label.toLowerCase()) ?? label, count: 0 });
       options.get(value).count++;
     }
   }
-  const last = NOT_LISTED.toLowerCase();
+  const last = (filter.missing?.label ?? NOT_LISTED).toLowerCase();
   return [...options.values()].sort((a, b) =>
     (a.value === last) - (b.value === last) ||
     a.label.localeCompare(b.label, "en", { sensitivity: "base", numeric: true }));
@@ -341,7 +371,7 @@ export function parseListState(hash, section, index) {
   const entries = index.sections[section] || [];
   const filters = {};
   for (const f of FILTERS[section] || []) {
-    const value = params.get(f.field);
+    const value = params.has(f.field) ? canonicalValue(f, params.get(f.field)) : "";
     if (value && filterOptions(entries, f, index).some((o) => o.value === value)) filters[f.field] = value;
   }
   return { filters, query: params.get("q") ?? "" };
@@ -352,4 +382,35 @@ export function parseListState(hash, section, index) {
 // Back skips the letters; any other change (a dropdown, "Clear filters") pushes.
 export function historyMode(lastEdit, edit) {
   return lastEdit === "name" && edit === "name" ? "replace" : "push";
+}
+
+// R22: remembers the address of each section's list as it was last shown, so
+// the "← Section" link of a detail page can return to it with its filters.
+// `memory` maps a section to a list address; a new object is returned. Only a
+// list address counts, rebuilt from what parseListState accepts.
+export function rememberList(memory, hash, index) {
+  const route = parseRoute(hash, index);
+  if (route.view !== "list") return memory;
+  const state = parseListState(hash, route.section, index);
+  return { ...memory, [route.section]: listHash(route.section, state.filters, state.query) };
+}
+
+// R22: where the "← Section" link of a detail page goes: the section's last list,
+// or the plain section when none was shown.
+export function backHref(memory, section) {
+  return memory?.[section] ?? `#/${section}`;
+}
+
+// R23: the notes shown under a section's filters: for each filter with a
+// renamed missing option and a note, how many entries have no value, and why,
+// e.g. "Unknown species: the source data gives no species for 32 characters, …".
+export function filterNotes(entries, section, index) {
+  const notes = [];
+  for (const f of FILTERS[section] || []) {
+    if (!f.missing?.note) continue;
+    const missing = f.missing.label.toLowerCase();
+    const count = entries.filter((e) => filterValues(e, f, index).includes(missing)).length;
+    if (count) notes.push(`${f.missing.label}: ${f.missing.note.replace("{count}", count)}`);
+  }
+  return notes;
 }

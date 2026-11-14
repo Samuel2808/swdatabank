@@ -7,6 +7,7 @@ import {
   titleFor, countText, paragraphsOf,
   favoriteKey, favoriteGroups, favoriteButtonText,
   filterOptions, applyFilters, listHash, parseListState, historyMode,
+  rememberList, backHref, filterNotes,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { createFavoriteStore, createIntroMemory } from "./store.js";
@@ -35,6 +36,9 @@ let index = null;
 let listView = null;
 // R20: the address this page just wrote itself, so its own hashchange is not taken for Back.
 let ownHash = null;
+// R22: each section's list address as last shown in this tab, for the "← Section" link.
+// Kept in memory only: a reload forgets it.
+let listMemory = {};
 let menuOpen = menuStartsOpen(wideScreen.matches);
 
 // R18: favorites live in localStorage. Even reading window.localStorage can throw
@@ -223,11 +227,14 @@ function renderList(section) {
   });
   const filters = el("fieldset", { class: "filters" }, el("legend", { text: "Filter by" }),
     ...selects.map((s) => s.label), clear);
+  // R23: why some entries have an option such as "Unknown species".
+  const notes = filterNotes(all, section, index).map((text) => el("p", { class: "hint filter-note", text }));
 
   function update() {
     const chosen = Object.fromEntries(selects.map((s) => [s.field, s.select.value]));
     const filtered = selects.some((s) => s.select.value);
     const found = searchEntries(applyFilters(all, chosen, section, index), input.value);
+    listMemory = rememberList(listMemory, listHash(section, chosen, input.value), index);
     count.textContent = countText(found.length, all.length, labelOf(section), input.value, filtered);
     list.replaceChildren(...cards(found).children);
   }
@@ -257,7 +264,7 @@ function renderList(section) {
 
   input.addEventListener("input", () => commit("name"));
   apply(parseListState(location.hash, section, index), true);
-  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, count, list);
+  main.replaceChildren(banner(section), el("h1", { text: labelOf(section) }), input, filters, ...notes, count, list);
   listView = { section, apply };
 }
 
@@ -283,7 +290,7 @@ function renderDetail(entry) {
 
   main.replaceChildren(
     banner(entry.section),
-    el("a", { class: "back", href: `#/${entry.section}`, text: `← ${labelOf(entry.section)}` }),
+    el("a", { class: "back", href: backHref(listMemory, entry.section), text: `← ${labelOf(entry.section)}` }),
     el("h1", { text: entry.name }),
     favoriteButton(entry),
     el("h2", { text: "Facts" }), facts,

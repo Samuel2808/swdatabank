@@ -121,6 +121,7 @@ The page state lives in the URL hash, so links and the browser's back button wor
 - **X-wing:** flies left to right across the upper part of the screen in about 4 s, then waits; the cycle repeats every 14 s. While it crosses it fires two short red laser bolts forward.
 - **R2-D2 and C-3PO:** walk together along the bottom of the screen from right to left, taking about 30 s to cross, on a loop. R2-D2 rocks side to side; C-3PO's legs swing.
 - Visitors whose system asks for reduced motion (`prefers-reduced-motion: reduce`) see no animation: the silhouettes are hidden.
+  > **Changed in round 6.** With reduced motion the silhouettes are shown standing still; see "Silhouettes stand still with reduced motion (R13, changed)" in the round 6 section.
 - Animations are pure CSS (`@keyframes`); no JavaScript runs for them.
 
 ### Colours (R14)
@@ -265,6 +266,7 @@ The owner accepted every suggested default to the twelve questions asked at the 
 - **Values:**
   - A *list* field holds several values separated by commas (and `/` for manufacturers): a planet with climate "temperate, arid" counts as both "temperate" and "arid". A piece that is only a company suffix ("Inc", "Inc.", "Incorporated") is joined back to the name before it, so "Gallofree Yards, Inc." stays one manufacturer.
   - A *reference* field shows the names of the entries it points to (a character's species "Human"…). An entry with no reference gets the value "Not listed": 32 characters have no species in the data.
+    > **Changed in round 6.** For the Species filter this option is now "Unknown species", with a note; spelling variants are merged. See "Clean filter options (R23)" in the round 6 section.
   - Values are trimmed and compared ignoring upper/lower case, so "Starfighter" and "starfighter" are one option. The option shows the spelling found first in the data. Values such as "unknown" and "n/a" are options like any other.
 - **Controls:** under the name box, a group "Filter by" with one dropdown per field. Each starts at "Any", followed by the values found in that section, sorted alphabetically (years in order, "Not listed" last), each with the number of entries that have it, e.g. "arid (9)". The counts are for the whole section and do not change as other filters are set.
 - **Combining:** an entry is shown when it has the chosen value for every field that is not "Any" (AND across fields), and its name matches the name box (R4). The count line says how many are shown. When nothing is left: "No planets match these filters." or, with text in the name box, "No planets match “text” with these filters."
@@ -303,6 +305,7 @@ The owner accepted every suggested default to the eleven questions asked at the 
 - **History and Back:** every dropdown change and every press of "Clear filters" adds one history entry, so Back returns to the filters before it. In the name box the first keystroke adds one entry and later keystrokes replace it, as in the site-wide search (R16), so Back does not step through every letter. Changing a dropdown after typing adds a new entry again. The rule is the pure function `historyMode(lastEdit, edit)`: `"replace"` when both are `"name"`, otherwise `"push"`.
 - **Updating in place:** when the address changes but the view is still the same section's list (Back, Forward, a dropdown, typing), the list is updated in place: the dropdowns and name box take the values from the address, the cards and count follow, and focus and scrolling stay where they are. Any other change renders the view afresh as before.
 - Following the section's menu link (`#/planets`) shows it unfiltered, as in round 4; Back returns to the filters. The "← Planets" link on a detail page opens the plain section; the browser's Back button returns to the filtered list.
+  > **Changed in round 6.** The "← Section" link now returns to the section's last filters; see "The back link keeps the filters (R22)" in the round 6 section.
 - **Pure parts (`js/logic.js`):** `listHash(section, chosen, query)` builds the address; `parseListState(hash, section, index)` reads `{ filters, query }` back, keeping only fields of that section and values that are among its options. `parseRoute` now ignores a `?…` part after a section or entry, so `#/planets?climate=arid` is the Planets list and `#/people/1?x` is character 1. The search route (`#/search/<text>`) keeps a `?` as part of the text.
 - Recorded in decision 0009.
 
@@ -313,6 +316,7 @@ The owner accepted every suggested default to the eleven questions asked at the 
 - The X-wing is drawn to fit: 112 px wide and 32 px tall (84 × 24 px below 768 px), 4 px from the top of the strip. The laser bolts are part of the X-wing's drawing, so they stay in the strip too. The R17 timing is unchanged.
 - The page (`.page`) starts below the strip (`margin-top: var(--sky)`), and the sidebar starts below it too. Text that scrolls up passes behind the opaque strip and the sticky top bar, never under the X-wing.
 - With reduced motion the strip is not shown, and its height (`--sky`) is 0, so no empty band is left. During the intro the strip is hidden like the other silhouettes.
+  > **Changed in round 6.** With reduced motion the strip is shown, with the X-wing standing still in it (R13, changed).
 - Recorded in decision 0008.
 
 ### Testing round 5
@@ -321,6 +325,66 @@ The owner accepted every suggested default to the eleven questions asked at the 
 - R20: `listHash` (order, left-out "Any", encoding); `parseListState` (round trip with the real data, unknown fields and values ignored); `parseRoute` ignores the `?…` part; `historyMode`; the app writes the address on every change and updates the list in place on `hashchange`.
 - R21: `styles.css` makes `.sky` an opaque fixed strip under the top bar of height `--sky`, the X-wing fits inside it at both widths, the page and the sidebar start below it, and reduced motion sets `--sky` to 0; the strip in `index.html` holds only the X-wing.
 - The first and later visits, "Play intro", Back through filters and the strip are also checked by hand in the browser at 375 × 812 and at desktop width.
+
+## Round 6: the back link keeps the filters, still silhouettes, clean filter options (R22, R13, R23)
+
+The owner accepted every suggested default to the nine questions asked at the start of round 6. They are written into the sections below.
+
+### The back link keeps the filters (R22)
+
+- **Before (round 5):** the "← Planets" link on a detail page opened the plain section (`#/planets`); only the browser's Back button returned to the filtered list.
+- **Now:** the page remembers, for each section, the address of its list the last time it was shown in this tab, with its filters and name box (R20), e.g. `#/planets?climate=arid&q=tat`. The "← Planets" link on any detail page of that section points there.
+- It is the section's *last* list, however the visitor reached the entry: Planets filtered by climate → Tatooine → Luke Skywalker → "← Characters" opens the Characters list as it was last shown (plain, if it was never shown).
+- A detail page opened directly (a link, a reload) whose section list has not been shown in this tab links to the plain section.
+- The memory lives only in the page (a variable in `js/app.js`); nothing is stored, so a reload forgets it. `CLAUDE.md`'s storage rule is unchanged.
+- The link stays an ordinary link (`href`), so it can be copied or opened in a new tab; following it adds a history entry, like any link. The list opens at the top: scroll position is not restored.
+- **Pure parts (`js/logic.js`):** `rememberList(memory, hash, index)` returns a new memory with the list's address under its section when `hash` is a section list, and the memory unchanged otherwise. The address is rebuilt with `listHash(parseListState(…))`, so unknown fields and values are not remembered. `backHref(memory, section)` gives the remembered address or `#/<section>`.
+- Recorded in decision 0011.
+
+### Silhouettes stand still with reduced motion (R13, changed)
+
+- **Before (rounds 2–5):** with `prefers-reduced-motion: reduce` the X-wing, its strip, the droids and their ground strip were hidden, and `--sky` was 0.
+- **Now:** with reduced motion both strips are shown, at their normal heights (`--sky` 40 px / 32 px, `--ground` 64 px / 48 px), and the silhouettes stand still in them:
+  - the X-wing stands in the middle of its strip (`left: 50%`, moved back by half its width), with no animation and no laser bolts;
+  - R2-D2 and C-3PO stand side by side near the right end of the ground strip (16 px from the right edge), with no walking, rocking or leg swing.
+- The page keeps its room for both strips (`.page` keeps `margin-top: var(--sky)` and `padding-bottom: var(--ground)`), so no text is under them (R21 still holds).
+- During the intro the silhouettes and strips stay hidden, as before.
+- Still CSS-only (decisions 0003, 0005, 0007): the reduced-motion block sets `animation: none` and a fixed `transform`.
+
+### Clean filter options (R23)
+
+- **Spelling variants** are merged by an explicit table, `same`, on each filter in `FILTERS` (`js/sections.js`): a list of groups, each a list of spellings, the first being the label shown. Nothing is merged automatically (no fuzzy matching, no stemming). The groups:
+
+  | Section / filter | Shown as | Also matches |
+  |------------------|----------|--------------|
+  | Species / Language | Galactic Basic | Galatic Basic |
+  | Starships / Manufacturer | Hoersch-Kessel Drive, Inc. | Hoersch-Kessel Drive, Inc |
+  | Starships / Manufacturer | Nubia Star Drives | Nubia Star Drives, Incorporated |
+  | Vehicles / Class | airspeeder | air speeder |
+  | Planets / Terrain | deserts | desert |
+  | Planets / Terrain | jungles | jungle |
+  | Planets / Terrain | mountains | mountain |
+  | Planets / Terrain | oceans | ocean |
+  | Planets / Terrain | swamps | swamp |
+  | Planets / Terrain | savannas | savanna, savannahs |
+  | Species / Classification | mammal | mammals |
+
+  The label is the spelling most entries use; on a tie, the correct one (Hoersch-Kessel Drive, Inc.).
+- **Not merged** (different words, not spellings): reptile / reptilian, grass / grasslands, cruiser / Space cruiser / Star Cruiser, Ubrikkian Industries / Ubrikkian Industries Custom Vehicle Division. "artic" and "subartic" have no other spelling in the data and stay as written.
+- A merged option's value is its label in lower case (`galactic basic`), and its count is the number of entries with any of its spellings (each entry once).
+- **Unknown species:** a character with no species in the data has the option "Unknown species" (value `unknown species`) instead of "Not listed"; it stays last. A reference filter says what its missing option is called with `missing` in `FILTERS`; others still say "Not listed".
+- **The note:** under the "Filter by" group of the Characters list, a short line (class `hint filter-note`): *"Unknown species: the source data gives no species for 32 characters, many of them human, such as Luke Skywalker."* The number is counted from the data. The text is the filter's `note` in `FILTERS`, with `{count}` filled in.
+- **Detail pages do not change:** they still show every fact as the data holds it (R5), e.g. "Galatic Basic".
+- **Old links (R20):** a value written before this round still selects its option: any spelling in a `same` group (`language=galatic+basic`) and, for Species, `not listed` (`species=not+listed`) select the merged option. The address is left as it is; new addresses use the new values.
+- **Pure parts (`js/logic.js`):** `filterValues` and `filterOptions` apply `same` and `missing`; `canonicalValue(filter, value)` turns any known spelling (or an old value) into the option value, used by `parseListState`; `filterNotes(entries, section, index)` gives the notes to show under a section's filters.
+- Recorded in decision 0010.
+
+### Testing round 6
+
+- R22: `rememberList` and `backHref` (a list address is remembered per section; other routes leave the memory unchanged; unknown filters are dropped; the plain section when nothing is remembered); the app builds the back link with `backHref` and remembers each list it shows.
+- R13 (changed): in the reduced-motion block of `styles.css` the strips are not hidden, `--sky` is not 0, the X-wing, lasers and droids have `animation: none`, the lasers are hidden, and the X-wing and droids have a fixed place; the intro still hides them. The round 4 and round 5 tests that said the strips are hidden with reduced motion are changed to say this.
+- R23: every `same` group is merged into one option with the summed count and the label the table gives; the variants in the real data ("Galatic Basic"…) are no longer separate options; the label is the most common spelling; characters with no species are "Unknown species", last; the note says how many; detail facts are unchanged; old link values still select the merged option. The round 4 tests that expected "Not listed" for species are changed to expect "Unknown species".
+- Also checked by hand in the browser at 375 × 812 and desktop width, including with reduced motion emulated.
 
 ## Code layout
 
