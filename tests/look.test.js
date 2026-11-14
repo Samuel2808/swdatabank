@@ -156,10 +156,14 @@ test("R13: the X-wing flies and fires, and the droids walk together", () => {
   for (const name of ["fly", "fire", "walk"]) assert.match(css, new RegExp(`@keyframes ${name} \\{`));
 });
 
+// Changed in round 6: the silhouettes stand still instead of being hidden (R13, changed).
 test("R13: there is no animation when the visitor asks for reduced motion", () => {
   const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/);
   assert.ok(block, "styles.css has a reduced-motion block");
-  assert.match(block[1], /\.sky \{[^}]*display: none/);
+  for (const sel of ["#xwing", "\\.droids", "#r2d2", "\\.leg"]) {
+    assert.match(block[1], new RegExp(`${sel} \\{[^}]*animation: none`), sel);
+  }
+  assert.match(block[1], /\.laser \{[^}]*display: none/);
 });
 
 // ---- R14: colours

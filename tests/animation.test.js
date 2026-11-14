@@ -62,10 +62,12 @@ test("R17: the droids walk across once at the start of the cycle, then rest off 
   assert.match(last.body, /translateX\(-\d+px\)/, "they rest past the left edge");
 });
 
-test("R17: the cycle starts when the intro ends, and reduced motion still hides the silhouettes", () => {
+// Changed in round 6: with reduced motion the silhouettes no longer hide; they
+// stand still (R13, changed), so the cycle does not run at all.
+test("R17: the cycle starts when the intro ends, and does not run with reduced motion", () => {
   assert.match(css, /body\.intro-active \.sky \{[^}]*display: none/);
   assert.match(css, /body\.intro-active \.ground \{[^}]*display: none/);
   const reduced = css.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/);
-  assert.match(reduced[1], /\.sky \{[^}]*display: none/);
-  assert.match(reduced[1], /\.ground \{[^}]*display: none/);
+  assert.match(reduced[1], /#xwing \{[^}]*animation: none/);
+  assert.match(reduced[1], /\.droids \{[^}]*animation: none/);
 });
