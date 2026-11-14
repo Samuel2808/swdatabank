@@ -98,7 +98,8 @@ test("R23: the label is the spelling most entries use", () => {
 
 test("R23: choosing a merged option keeps the entries with any of its spellings", () => {
   const found = applyFilters(real.sections.species, { language: "galactic basic" }, "species", real);
-  assert.deepEqual(found.map((e) => e.record.language).sort(), ["Galactic Basic", "Galactic Basic", "Galatic Basic"]);
+  // The data also writes "Galactic basic", which R19 already merged by case.
+  assert.deepEqual(found.map((e) => lower(e.record.language)).sort(), ["galactic basic", "galactic basic", "galatic basic"]);
 });
 
 // ---- unknown species
