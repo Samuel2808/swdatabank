@@ -258,6 +258,15 @@ export function favoriteButtonText(on) {
   return on ? "★ In favorites" : "☆ Add to favorites";
 }
 
+// R24: the star on a favorite's card, and the text a screen reader hears instead.
+export const FAVORITE_MARK = { star: "★", label: " (favorite)" };
+
+// R24: each entry of a card list with whether it is a favorite, in the same order.
+export function markFavorites(entries, list) {
+  const keys = new Set(list ?? []);
+  return entries.map((entry) => ({ entry, favorite: keys.has(favoriteKey(entry.section, entry.id)) }));
+}
+
 // R19: the option shown for an entry with no reference, e.g. a character with no species.
 export const NOT_LISTED = "Not listed";
 const COMPANY_SUFFIX = /^(inc\.?|incorporated|ltd\.?)$/i;
