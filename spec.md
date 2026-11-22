@@ -169,7 +169,7 @@ The page state lives in the URL hash, so links and the browser's back button wor
 - **Results view:** heading "Search", the summary "N results for “text”" (or a prompt "Type a name in the search bar to search every section." when the bar is empty), then a group per section: the section's icon, label and number of matches, and its entries as the usual cards linking to their detail pages. The summary is a polite live region, so screen readers hear the count as it changes.
 - **No match:** "Nothing matches “text” in any section." and a hint: "Check the spelling, or try part of a name, such as “sky” for Skywalker."
 - One letter is enough to search; nothing is hidden behind a minimum length.
-- The search view uses the Films photo as its backdrop and banner, and no menu item is marked current.
+- The search view uses the Films photo as its backdrop and banner, and no menu item is marked current. *(Changed in round 7, R25: it has its own photo.)*
 
 ### Section search uses the same rules (R4, changed)
 
@@ -243,12 +243,12 @@ The owner accepted every suggested default to the twelve questions asked at the 
 
 - **Button:** every detail view has a button under its title: "☆ Add to favorites" when the entry is not a favorite, "★ In favorites" when it is. Pressing it switches between the two. The change is also read out by the polite live region ("Added to favorites" / "Removed from favorites").
 - **Menu:** a seventh menu item, "Favorites", after the six sections, with its own icon drawn for this project (a star outline), at `#/favorites`. It is marked current on that view.
-- **Favorites view:** heading "Favorites", then one group per section that has favorites, in menu order, each with the section's icon, label and count, and its entries as the usual cards in that section's list order (the same layout as the search results, R16). When there are none: "No favorites yet." and the hint "Open any entry and press “☆ Add to favorites” to keep it here." The view uses the Films photo, like the search view. The tab title is "Favorites · Star Wars Databank".
+- **Favorites view:** heading "Favorites", then one group per section that has favorites, in menu order, each with the section's icon, label and count, and its entries as the usual cards in that section's list order (the same layout as the search results, R16). When there are none: "No favorites yet." and the hint "Open any entry and press “☆ Add to favorites” to keep it here." The view uses the Films photo, like the search view. *(Changed in round 7, R25: it has its own photo.)* The tab title is "Favorites · Star Wars Databank".
 - **Storage:** favorites are kept in the browser's `localStorage` under `swdatabank.favorites`, as a JSON array of keys such as `"people/1"`, in the order they were added. They stay after the page is reloaded or closed. Nothing is sent anywhere (R2), and there is no account.
 - If storage cannot be used (some private windows throw on `localStorage`), favorites still work until the page is closed, and the favorites button and view show the note "Favorites can't be saved in this browser and will be lost when you close the page."
 - **Pure parts (`js/logic.js`):** `favoriteKey(section, id)`, `parseFavorites(text)` (reads stored text; anything that is not an array of `section/id` strings with a known section is dropped, and junk gives `[]`), `toggleFavorite(list, key)` (adds at the end or removes, never duplicates), `favoriteGroups(index, list)` (groups in menu order, entries in list order, keys whose entry is not in the snapshot are skipped), `favoriteButtonText(on)`. `parseRoute` returns `{ view: "favorites" }` for `#/favorites`, and `titleFor` gives its title.
 - **Store (`js/store.js`):** `createFavoriteStore(storage)` takes a storage object (`getItem`/`setItem`), the way the loader takes a fetch function, so tests can pass a fake. It reads once, writes after every change, and has `list()`, `has(key)`, `toggle(key)` and `persistent` (false when reading or writing throws, or when no storage is given).
-- Not added (not asked for): stars on list cards, "remove all", favorites in the site-wide search.
+- Not added (not asked for): stars on list cards, "remove all", favorites in the site-wide search. *(Changed in round 7, R24: list cards now show a star.)*
 
 ### Filters per section (R19)
 
@@ -386,6 +386,44 @@ The owner accepted every suggested default to the nine questions asked at the st
 - R23: every `same` group is merged into one option with the summed count and the label the table gives; the variants in the real data ("Galatic Basic"…) are no longer separate options; the label is the most common spelling; characters with no species are "Unknown species", last; the note says how many; detail facts are unchanged; old link values still select the merged option. The round 4 tests that expected "Not listed" for species are changed to expect "Unknown species".
 - Also checked by hand in the browser at 375 × 812 and desktop width, including with reduced motion emulated.
 
+## Round 7: stars on favorite cards, own photos for search and favorites (R24, R25)
+
+Before coding, the owner answered four questions; each answer is written into the sections below. In short: the two new photos may be downloaded from Wikimedia Commons; the star only shows (it is not a button); I pick the two places; the work goes on branch `round-7-stars-photos` and is pushed only when the owner says so.
+
+### A star on favorite cards (R24)
+
+- **Where:** every card list: a section list (R3, also after a filter or name change, R19/R20), the search results (R16) and the Favorites page (R18). On the Favorites page every card is a favorite, so every card has the star.
+- **Look:** a white "★" (R14) in the top-right corner of the card, 1rem, in the card's own padding. The card keeps 28 px of padding on the right so a long name never runs under the star (R8). Cards of entries that are not favorites show nothing (no empty "☆").
+- **Accessibility:** the visible star is `aria-hidden`; next to it a visually hidden " (favorite)" is part of the card's link text, so a screen reader reads e.g. "Luke Skywalker 19BBY (favorite)".
+- **Only a mark:** the star is not a button. Favorites are still added and removed on the entry's page (R18). Because every list is drawn again when it is shown, a star appears or disappears as soon as the visitor goes back to a list after changing a favorite.
+- **Pure parts (`js/logic.js`):** `markFavorites(entries, list)` returns `[{ entry, favorite }]` in the same order, where `favorite` is true when `favoriteKey(entry.section, entry.id)` is in `list`. `FAVORITE_MARK` holds the star and the hidden text. `js/app.js` builds every card list with one function, `cards(entries)`, which uses them.
+- Recorded in decision 0012.
+- **Changed from round 4:** the R18 section said "Not added (not asked for): stars on list cards". They are now added; "remove all" and favorites in the site-wide search are still not.
+
+### Own photos for search and favorites (R25)
+
+- **Before (rounds 3–6):** the search view and the Favorites view used the Films photo (Death Valley) as backdrop and banner.
+- **Now:** each has its own photo, following the R11 rules (a real filming location, public domain or CC0, bundled, credited in `js/photos.js`, `CREDITS.md` and the footer's pointer to it):
+
+  | View      | File                     | Place (filmed as) | Author | Licence |
+  |-----------|--------------------------|-------------------|--------|---------|
+  | Search    | `img/photos/search.jpg`    | Wadi Rum, Jordan (Jedha) | Peter Chisholm | CC0 |
+  | Favorites | `img/photos/favorites.jpg` | Plaza de España, Seville, Spain (Naboo) | NACLE | CC0 |
+
+- `PHOTOS` in `js/photos.js` gets two more keys, `search` and `favorites`, with the same fields as the section photos. `scripts/fetch-photos.mjs` lists both Commons files, and they are 1280 px wide JPEGs like the others.
+- **Pure part (`js/logic.js`):** `photoFor(route)` gives the `PHOTOS` key for a route: `search` for the search view, `favorites` for the Favorites view, and the route's section for list, detail and "not found" views. `js/app.js` uses it for both the backdrop (R11) and the banner (R12); no view names a photo itself any more.
+- The banner and its caption work as before: "Wadi Rum, Jordan · filmed as Jedha · Photo: Peter Chisholm (CC0)".
+- A detail page opened from the search results or the Favorites page still uses its own section's photo.
+- While the data loads (before the first route is drawn), the backdrop is still the Films photo.
+- Recorded in decision 0013.
+
+### Testing round 7
+
+- R24: `markFavorites` (marks exactly the favorites, keeps the order, the same id in another section is not marked, an empty or unknown list marks nothing); `FAVORITE_MARK` is a ★ with hidden text; `js/app.js` draws the star and the hidden text in `cards()`, and section lists, search results and the Favorites page all go through `cards()`; the star is placed in the card's corner in `styles.css` and the card keeps room for it.
+- R25: `photoFor` for every kind of route; `PHOTOS.search` and `PHOTOS.favorites` are bundled JPEGs under 600 KB, freely licensed, with place, planet, author and alt text, listed in `CREDITS.md` and `scripts/fetch-photos.mjs`; the two photos are different files from the section photos; `js/app.js` no longer names `"films"` for the search or Favorites view, and uses `photoFor` for the backdrop.
+- All earlier tests still pass.
+- Also checked by hand in the browser at 375 × 812 and at desktop width.
+
 ## Code layout
 
 ```
@@ -393,7 +431,7 @@ index.html          page shell
 styles.css          styling
 js/sections.js      section table, the reference-field mapping and the filters per section (R19)
 js/icons.js         one inline SVG icon per section (R10)
-js/photos.js        one photo per section, with place and credits (R11, R12)
+js/photos.js        one photo per section, plus search and favorites (R25), with place and credits (R11, R12)
 js/intro.js         the intro's title and opening text (R15)
 img/photos/*.jpg    the bundled photos
 CREDITS.md          source page, author and licence of each photo
