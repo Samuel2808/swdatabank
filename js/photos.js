@@ -1,4 +1,5 @@
-// One bundled photo per section (R11 background, R12 banner). Every photo is a
+// One bundled photo per section (R11 background, R12 banner), plus one each for
+// the search and Favorites views (R25). Every photo is a
 // real Star Wars filming location, released into the public domain or under CC0.
 // Full source pages are in CREDITS.md; this file holds no URLs (R2).
 
@@ -49,6 +50,23 @@ export const PHOTOS = {
     filmedAs: "Hoth",
     alt: "A glacier between dark rocks and low clouds",
     author: "Durkadenz",
+    license: "CC0",
+  },
+  // R25: the views with no section of their own.
+  search: {
+    file: "img/photos/search.jpg",
+    place: "Wadi Rum, Jordan",
+    filmedAs: "Jedha",
+    alt: "Red sandstone cliffs rising from an orange sand desert under a clear blue sky",
+    author: "Peter Chisholm",
+    license: "CC0",
+  },
+  favorites: {
+    file: "img/photos/favorites.jpg",
+    place: "Plaza de España, Seville, Spain",
+    filmedAs: "Naboo",
+    alt: "A wide brick plaza with towers and a curved canal, under a blue sky with clouds",
+    author: "NACLE",
     license: "CC0",
   },
 };

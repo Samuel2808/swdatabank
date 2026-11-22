@@ -7,7 +7,8 @@ const COMMONS = "https://commons.wikimedia.org";
 const WIDTH = 1280;
 const HEADERS = { "User-Agent": "swdatabank-course-project/1.0 (student project; static fan site)" };
 
-// One public-domain or CC0 photo of a real filming location per section.
+// One public-domain or CC0 photo of a real filming location per section, plus
+// the search and Favorites views (R25).
 // Keep in step with js/photos.js and CREDITS.md.
 export const SOURCES = {
   films: "Death Valley dunes (23802298723).jpg",
@@ -16,6 +17,9 @@ export const SOURCES = {
   species: "Redwood National Park REDW9373.jpg",
   starships: "Tikal Temple IV & Mundo Perdido (9791210153).jpg",
   vehicles: "Hardangerjøkul2013.jpg",
+  // R25: the search and Favorites views have their own photos.
+  search: "Wadi rum desert.jpg",
+  favorites: "Panoramica plaza españa sevilla.jpg",
 };
 
 // Files whose original is not wider than WIDTH: Commons would send the full-size
