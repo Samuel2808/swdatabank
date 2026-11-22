@@ -7,7 +7,7 @@ import {
   titleFor, countText, paragraphsOf,
   favoriteKey, favoriteGroups, favoriteButtonText, markFavorites, FAVORITE_MARK,
   filterOptions, applyFilters, listHash, parseListState, historyMode,
-  rememberList, backHref, filterNotes,
+  rememberList, backHref, filterNotes, photoFor,
 } from "./logic.js";
 import { loadAll, errorMessage } from "./loader.js";
 import { createFavoriteStore, createIntroMemory } from "./store.js";
@@ -177,7 +177,8 @@ function trapMenuFocus(e) {
   items[next].focus();
 }
 
-// R11: the section's photo behind the page; R12: the same photo as a banner.
+// R11: the view's photo behind the page; R12: the same photo as a banner.
+// R25: `section` may also be "search" or "favorites" (see photoFor).
 function setBackdrop(section) {
   backdrop.style.backgroundImage = `url("${PHOTOS[section].file}")`;
 }
@@ -333,7 +334,7 @@ function renderFavorites() {
     : [el("p", { class: "empty", text: "No favorites yet." }),
       el("p", { class: "hint", text: "Open any entry and press “☆ Add to favorites” to keep it here." })];
   if (!favorites.persistent) body.push(el("p", { class: "hint fav-note", text: NOT_SAVED }));
-  main.replaceChildren(banner("films"), el("h1", { text: "Favorites" }), ...body);
+  main.replaceChildren(banner("favorites"), el("h1", { text: "Favorites" }), ...body);
 }
 
 function renderNotFound(section) {
@@ -362,7 +363,7 @@ function renderSearch(query) {
     body.push(el("p", { class: "count", text: summary }), ...sectionGroups(groups));
   }
   announcer.textContent = summary;
-  main.replaceChildren(banner("films"), el("h1", { text: "Search" }), ...body);
+  main.replaceChildren(banner("search"), el("h1", { text: "Search" }), ...body);
 }
 
 // R16: typing goes to #/search/<text>. The first keystroke adds a history entry;
@@ -389,7 +390,7 @@ function render() {
   listView = null;
   const own = route.view === "search" || route.view === "favorites"; // views with no section
   renderMenu(route.view === "favorites" ? "favorites" : own ? null : route.section);
-  setBackdrop(own ? "films" : route.section);
+  setBackdrop(photoFor(route)); // R25: search and Favorites have their own photo
   if (route.view !== "search") globalSearch.value = "";
   else if (globalSearch.value !== route.query) globalSearch.value = route.query;
   if (route.view === "search") renderSearch(route.query);
