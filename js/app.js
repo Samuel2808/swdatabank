@@ -5,7 +5,7 @@ import {
   nextMenuState, menuStartsOpen, nextFocusIndex,
   starField, introStartState, nextIntroState, introKeyEnds,
   titleFor, countText, paragraphsOf,
-  favoriteKey, favoriteGroups, favoriteButtonText,
+  favoriteKey, favoriteGroups, favoriteButtonText, markFavorites, FAVORITE_MARK,
   filterOptions, applyFilters, listHash, parseListState, historyMode,
   rememberList, backHref, filterNotes,
 } from "./logic.js";
@@ -195,9 +195,14 @@ function subtitle(entry) {
   return r.model || r.classification || r.climate || r.birth_year || "";
 }
 
+// R3, R24: every card list is drawn here; a favorite's card shows a star.
 function cards(entries) {
-  return el("ul", { class: "cards" }, ...entries.map((e) =>
-    el("li", {}, el("a", { class: "card", href: `#/${e.section}/${e.id}` }, e.name, el("small", { text: subtitle(e) })))));
+  return el("ul", { class: "cards" }, ...markFavorites(entries, favorites.list()).map(({ entry: e, favorite }) =>
+    el("li", {}, el("a", { class: "card", href: `#/${e.section}/${e.id}` }, e.name, el("small", { text: subtitle(e) }),
+      ...(favorite
+        ? [el("span", { class: "star", "aria-hidden": "true", text: FAVORITE_MARK.star }),
+          el("span", { class: "visually-hidden", text: FAVORITE_MARK.label })]
+        : [])))));
 }
 
 function renderList(section) {
