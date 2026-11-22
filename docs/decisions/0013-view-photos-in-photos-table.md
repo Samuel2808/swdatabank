@@ -1,0 +1,10 @@
+# 0013 — Give the search and Favorites views their own keys in PHOTOS, chosen by photoFor(route)
+
+Status: accepted (round 7)
+
+In the context of R25, which asks that the search page and the Favorites page each have their own background photo and banner instead of reusing the Films photo, under the R11 rules (freely licensed, bundled, credited), in a site where `js/photos.js` holds one photo per section, the app named `"films"` for these two views in three places, and the owner allowed two new photos to be downloaded from Wikimedia Commons,
+facing the options of two new downloaded photos added as `search` and `favorites` keys of `PHOTOS` and chosen for every view by a pure `photoFor(route)`; a separate `VIEW_PHOTOS` table next to `PHOTOS`; reusing the six bundled photos with a different crop or tint for these views; and showing the photo of the section with the most results or favorites,
+we decided for two new CC0 photos, Wadi Rum (filmed as Jedha) for search and the Plaza de España in Seville (filmed as Naboo) for Favorites, added to `PHOTOS` under the view names, with `photoFor(route)` giving the key for every route and the app using it for the backdrop and naming its own banner per view,
+and neglected a separate table (two lookups and two credit lists for photos that follow exactly the same rules, and the R11 tests would have to read both), crops of existing photos (the same places again, so not really their own photos, and a crop of a 1280 px photo looks soft as a banner), and a photo picked from the results (it changes as the visitor types, which flickers, and it is still a section's photo, not the page's own),
+to achieve one table and one credit list for every photo on the site, a tested rule that says which photo each view uses so no view names a photo by hand, and two places not used anywhere else on the site,
+accepting that `PHOTOS` now has keys that are not sections (code that loops over `PHOTOS` must not take its keys for sections), that the site bundles about 570 KB more, and that the Favorites panorama (1280 × 508) is wider than the other photos, so the backdrop crops more of its sides on tall screens.

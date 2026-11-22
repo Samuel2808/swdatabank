@@ -120,6 +120,13 @@ export function parseRoute(hash, index) {
   return entry ? { view: "detail", section, id, entry } : { view: "notfound", section };
 }
 
+// R11, R12, R25: the PHOTOS key for a route's backdrop and banner. The search and
+// Favorites views have their own photo; every other view uses its section's.
+export function photoFor(route) {
+  if (route.view === "search" || route.view === "favorites") return route.view;
+  return route.section;
+}
+
 // R9 (changed in round 3): whether the sidebar is open after an action.
 // "toggle" (the menu button) flips it on any screen. On narrow screens following
 // a link, Escape and a click on the scrim close it; on wide screens they leave it
@@ -256,6 +263,15 @@ export function favoriteGroups(index, list) {
 // R18: the text of the button on a detail page.
 export function favoriteButtonText(on) {
   return on ? "★ In favorites" : "☆ Add to favorites";
+}
+
+// R24: the star on a favorite's card, and the text a screen reader hears instead.
+export const FAVORITE_MARK = { star: "★", label: " (favorite)" };
+
+// R24: each entry of a card list with whether it is a favorite, in the same order.
+export function markFavorites(entries, list) {
+  const keys = new Set(list ?? []);
+  return entries.map((entry) => ({ entry, favorite: keys.has(favoriteKey(entry.section, entry.id)) }));
 }
 
 // R19: the option shown for an entry with no reference, e.g. a character with no species.

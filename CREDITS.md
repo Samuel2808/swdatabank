@@ -10,5 +10,7 @@ The background and banner photos (R11, R12) are real Star Wars filming locations
 | `img/photos/species.jpg` | Redwood National Park, USA (Endor) | National Park Service | Public domain | https://commons.wikimedia.org/wiki/File:Redwood_National_Park_REDW9373.jpg |
 | `img/photos/starships.jpg` | Tikal, Guatemala (Yavin 4) | Gary Todd | CC0 | https://commons.wikimedia.org/wiki/File:Tikal_Temple_IV_&_Mundo_Perdido_(9791210153).jpg |
 | `img/photos/vehicles.jpg` | Hardangerjøkulen glacier, Finse, Norway (Hoth) | Durkadenz | CC0 | https://commons.wikimedia.org/wiki/File:Hardangerjøkul2013.jpg |
+| `img/photos/search.jpg` (search page, R25) | Wadi Rum, Jordan (Jedha) | Peter Chisholm | CC0 | https://commons.wikimedia.org/wiki/File:Wadi_rum_desert.jpg |
+| `img/photos/favorites.jpg` (Favorites page, R25) | Plaza de España, Seville, Spain (Naboo) | NACLE | CC0 | https://commons.wikimedia.org/wiki/File:Panoramica_plaza_españa_sevilla.jpg |
 
 The X-wing, R2-D2 and C-3PO silhouettes and the menu icons were drawn for this project as simple SVG shapes. Star Wars and its characters belong to Lucasfilm; this is an unofficial fan project.
